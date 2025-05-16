@@ -24,7 +24,6 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const ChevronUpIcon = getIcon('ChevronUp');
   const BellIcon = getIcon('Bell');
   const LayersIcon = getIcon('Layers');
-  const TagIcon = getIcon('Tag');
   const MoveIcon = getIcon('Move');
   
   // Form state
