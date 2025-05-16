@@ -331,7 +331,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
   
 @layer utilities {
-@layer utilities {
+  /* Animation keyframes */
   @keyframes scaleIn {
     from {
       opacity: 0;
@@ -533,7 +533,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     transition: max-height 300ms ease-out, opacity 300ms ease-out, transform 300ms ease-out;
     overflow: hidden;
   } 
-}
 
 /* Import React Toastify CSS */
 @import 'react-toastify/dist/ReactToastify.css';

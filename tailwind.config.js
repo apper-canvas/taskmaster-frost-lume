@@ -103,5 +103,5 @@ export default {
     { pattern: /category-pill-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)/ },
     { pattern: /bg-opacity-(\d+)/ }
   ],
-  darkMode: 'class',
+  plugins: [],
 }
