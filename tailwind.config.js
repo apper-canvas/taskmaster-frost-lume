@@ -49,7 +49,9 @@ export default {
         'gradient-primary': 'linear-gradient(135deg, var(--tw-gradient-stops))',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-calendar': 'linear-gradient(to right, var(--tw-gradient-stops))',
-        'gradient-calendar-dark': 'linear-gradient(to right, var(--tw-gradient-stops))'
+        'gradient-calendar-dark': 'linear-gradient(to right, var(--tw-gradient-stops))',
+        'gradient-calendar-header': 'linear-gradient(to bottom, var(--tw-gradient-stops))',
+        'gradient-calendar-day': 'linear-gradient(to bottom right, var(--tw-gradient-stops))'
       },
       gradientColorStops: theme => ({
         'primary-start': theme('colors.primary.light'),
@@ -58,10 +60,16 @@ export default {
         'secondary-end': theme('colors.secondary.dark'),
         'calendar-start': theme('colors.primary.light'),
         'calendar-mid': theme('colors.primary.DEFAULT'),
-        'calendar-end': theme('colors.primary.dark'),
+        'calendar-end': theme('colors.primary.dark'), 
         'calendar-dark-start': theme('colors.surface.700'),
         'calendar-dark-mid': theme('colors.surface.800'),
-        'calendar-dark-end': theme('colors.surface.900')
+        'calendar-dark-end': theme('colors.surface.900'),
+        'calendar-header-start': theme('colors.primary.light'),
+        'calendar-header-end': theme('colors.primary.DEFAULT'),
+        'calendar-header-dark-start': theme('colors.surface.700'),
+        'calendar-header-dark-end': theme('colors.surface.900'),
+        'calendar-day-hover-start': theme('colors.primary.light'),
+        'calendar-day-hover-end': theme('colors.primary.DEFAULT')
       })
     }
   },

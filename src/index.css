@@ -117,6 +117,111 @@
     @apply font-medium;
   }
   
+/* Enhanced Calendar Dropdown Styling */
+/* Note: These styles primarily target Chrome/Edge browsers */
+::-webkit-calendar-picker {
+  @apply bg-gradient-calendar from-calendar-start via-calendar-mid to-calendar-end dark:bg-gradient-calendar-dark dark:from-calendar-dark-start dark:via-calendar-dark-mid dark:to-calendar-dark-end;
+  @apply rounded-lg shadow-lg border-none;
+  @apply overflow-hidden;
+}
+
+/* Calendar header styling */
+::-webkit-calendar-picker-header {
+  @apply bg-gradient-to-r from-primary-light to-primary dark:from-surface-700 dark:to-surface-900;
+  @apply text-white font-medium py-2 px-3;
+  @apply border-b border-surface-200 dark:border-surface-700;
+}
+
+/* Month and year dropdown in calendar */
+::-webkit-calendar-picker-month-year {
+  @apply text-white dark:text-surface-100 font-bold;
+}
+
+/* Day names (Mon, Tue, etc) */
+::-webkit-calendar-picker-weekday-row {
+  @apply bg-surface-100 dark:bg-surface-800;
+  @apply text-surface-500 dark:text-surface-400;
+  @apply text-xs font-medium;
+  @apply py-1;
+}
+
+/* Navigation buttons (prev/next month) */
+::-webkit-calendar-picker-nav-button {
+  @apply text-white dark:text-surface-100;
+  @apply hover:bg-white/20 dark:hover:bg-white/10;
+  @apply rounded;
+  @apply transition-colors duration-150;
+}
+
+/* Calendar grid */
+::-webkit-calendar-picker-grid {
+  @apply bg-white dark:bg-surface-800;
+  @apply p-2;
+}
+
+/* Individual day cells */
+::-webkit-calendar-picker-cell {
+  @apply text-surface-800 dark:text-surface-100;
+  @apply text-center rounded-full;
+  @apply w-8 h-8 flex items-center justify-center;
+  @apply hover:bg-gradient-to-r hover:from-primary-light hover:to-primary hover:text-white;
+  @apply dark:hover:bg-gradient-to-r dark:hover:from-surface-700 dark:hover:to-surface-800 dark:hover:text-white;
+  @apply transition-all duration-200;
+}
+
+/* Today's date styling */
+::-webkit-calendar-picker-cell-today {
+  @apply border border-primary dark:border-primary-light;
+  @apply text-primary dark:text-primary-light;
+  @apply font-bold;
+}
+
+/* Selected date */
+::-webkit-calendar-picker-cell-selected {
+  @apply bg-gradient-to-r from-primary-light to-primary dark:from-primary-dark to-primary;
+  @apply text-white font-bold;
+  @apply shadow-md;
+}
+
+/* Improving the calendar container with a custom appearance */
+input[type="date"] {
+  position: relative;
+}
+
+/* Enhance the calendar appearance (this is applied when the dropdown is shown) */
+input[type="date"]:in-range::-webkit-datetime-edit-fields-wrapper {
+  @apply rounded-t-lg;
+}
+
+/* Add custom styling to date inputs */
+input[type="date"]:focus {
+  @apply bg-gradient-to-r from-primary-light via-primary to-primary-dark;
+  @apply bg-clip-padding p-[1px];
+  @apply border-opacity-0;
+}
+
+input[type="date"]:focus::before {
+  @apply content-[''] absolute inset-[1px] bg-white dark:bg-surface-800 rounded-[7px] z-0;
+}
+
+/* Make sure the text remains visible and properly positioned */
+input[type="date"]:focus::-webkit-datetime-edit {
+  @apply relative z-[1] px-3 py-1;
+}
+
+/* Add shadow to the dropdown */
+input[type="date"]::-webkit-calendar-picker-indicator:hover + ::-webkit-datetime-edit,
+input[type="date"]:focus::-webkit-datetime-edit {
+  @apply shadow-lg;
+}
+
+/* The dropdown trigger (small calendar icon) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  @apply cursor-pointer;
+  @apply opacity-0; /* Hide the default icon */
+  z-index: 10;
+}
+
   .reminder-switch {
     @apply relative inline-flex h-6 w-11 items-center rounded-full bg-surface-300 dark:bg-surface-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
