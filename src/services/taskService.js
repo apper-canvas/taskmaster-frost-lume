@@ -70,6 +70,7 @@ export const fetchTasks = async () => {
     };
 
     const response = await client.fetchRecords('task28', params);
+    console.log('Params', params)
     
     if (!response || !response.data) {
       return [];
