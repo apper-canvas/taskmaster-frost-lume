@@ -64,6 +64,58 @@
   .reminder-badge {
     @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary dark:bg-secondary/20 dark:text-secondary-light;
   }
+
+  /* Calendar styling for date input */
+  input[type="date"] {
+    @apply relative cursor-pointer border border-surface-300 dark:border-surface-700 rounded-lg;
+    @apply transition-all duration-200 bg-white dark:bg-surface-800;
+  }
+
+  input[type="date"]:hover {
+    @apply border-opacity-0 dark:border-opacity-0;
+    @apply shadow-md;
+    @apply bg-gradient-to-r from-primary-light via-primary to-primary-dark dark:from-surface-700 dark:via-surface-800 dark:to-surface-900;
+    @apply bg-clip-padding p-[1px];
+  }
+
+  input[type="date"]:hover::before {
+    @apply content-[''] absolute inset-[1px] bg-white dark:bg-surface-800 rounded-[7px] z-0;
+  }
+
+  input[type="date"]:focus {
+    @apply outline-none border-opacity-0 dark:border-opacity-0;
+    @apply shadow-md;
+    @apply bg-gradient-to-r from-primary-light via-primary to-primary-dark dark:from-surface-700 dark:via-surface-800 dark:to-surface-900;
+    @apply bg-clip-padding p-[1px];
+  }
+
+  input[type="date"]:focus::before {
+    @apply content-[''] absolute inset-[1px] bg-white dark:bg-surface-800 rounded-[7px] z-0;
+  }
+
+  /* Target the calendar popup */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10;
+  }
+
+  /* Chrome, Safari, Edge calendar styling (limited support) */
+  ::-webkit-datetime-edit {
+    @apply px-3 py-1 relative z-[1];
+  }
+
+  ::-webkit-datetime-edit-fields-wrapper {
+    @apply text-surface-800 dark:text-surface-100;
+  }
+
+  ::-webkit-datetime-edit-text {
+    @apply text-primary dark:text-primary-light;
+  }
+
+  ::-webkit-datetime-edit-year-field,
+  ::-webkit-datetime-edit-month-field,
+  ::-webkit-datetime-edit-day-field {
+    @apply font-medium;
+  }
   
   .reminder-switch {
     @apply relative inline-flex h-6 w-11 items-center rounded-full bg-surface-300 dark:bg-surface-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;

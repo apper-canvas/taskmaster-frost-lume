@@ -44,7 +44,25 @@ export default {
       borderRadius: {
         'xl': '0.75rem',
         '2xl': '1rem'
-      }
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, var(--tw-gradient-stops))',
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-calendar': 'linear-gradient(to right, var(--tw-gradient-stops))',
+        'gradient-calendar-dark': 'linear-gradient(to right, var(--tw-gradient-stops))'
+      },
+      gradientColorStops: theme => ({
+        'primary-start': theme('colors.primary.light'),
+        'primary-end': theme('colors.primary.dark'),
+        'secondary-start': theme('colors.secondary.light'),
+        'secondary-end': theme('colors.secondary.dark'),
+        'calendar-start': theme('colors.primary.light'),
+        'calendar-mid': theme('colors.primary.DEFAULT'),
+        'calendar-end': theme('colors.primary.dark'),
+        'calendar-dark-start': theme('colors.surface.700'),
+        'calendar-dark-mid': theme('colors.surface.800'),
+        'calendar-dark-end': theme('colors.surface.900')
+      })
     }
   },
   plugins: [],
