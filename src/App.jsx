@@ -69,7 +69,7 @@ const App = () => {
         </div>
       </header>
 
-      <main className="flex-grow">
+      <main className="flex-grow mt-6">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
