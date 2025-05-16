@@ -16,8 +16,7 @@ const Home = () => {
   
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-  // Set up reminders for tasks with due dates when component mounts
-  useEffect(() => {
+    // Set up reminders for tasks with due dates when component mounts
     tasks.forEach(task => {
       if (task.dueDate && task.reminder && task.reminder.enabled) {
         reminderService.setReminder(task);
@@ -28,9 +27,8 @@ const Home = () => {
     if (tasks.some(task => task.reminder && task.reminder.enabled)) {
       reminderService.requestPermission();
     }
-  }, []);
-
     localStorage.setItem('tasks', JSON.stringify(tasks));
+    
   }, [tasks]);
   
   const ListIcon = getIcon('ListTodo');
@@ -46,17 +44,13 @@ const Home = () => {
       setTasks(task);
       return;
     }
-    
-    
-    // Update tasks array
-    setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
+
     // For a new task, add it to the array
-    // Update reminder if the task has one and has been completed
-    if (task.reminder && task.reminder.enabled && !task.completed) {
-      reminderService.cancelReminder(id);
-    } else if (task.reminder && task.reminder.enabled && task.completed) {
-      reminderService.setReminder({...task, completed: false});
-    }
+    setTasks([...tasks, task]);
+    toast.success(`Task "${task.title}" added successfully!`);
+    
+  };
+
   // Toggle task completion
   const toggleComplete = (id) => {
     const taskToToggle = tasks.find(task => task.id === id);
@@ -67,13 +61,16 @@ const Home = () => {
     if (taskToToggle.isRepeating && !taskToToggle.completed) {
       // For repeating tasks that are being marked complete, we need to:
       // 1. Mark the current instance as complete
-    // Cancel any reminders for this task
-    reminderService.cancelReminder(id);
-    
+      // Cancel any reminders for this task
+      reminderService.cancelReminder(id);
+
       // 2. Create the next instance with an updated due date
       
       // First, update the current task to be completed
       const updatedTasks = tasks.map(task => 
+        task.id === id ? { ...task, completed: true } : task
+      );
+
       if (taskToToggle.dueDate) {
         const currentDueDate = new Date(taskToToggle.dueDate);
         let nextDueDate = new Date(currentDueDate);
@@ -100,6 +97,8 @@ const Home = () => {
               nextDueDate.setFullYear(currentDueDate.getFullYear() + taskToToggle.customInterval);
             }
             break;
+          default:
+            break;
         }
         
         // Create a new task instance with the next due date
@@ -113,7 +112,26 @@ const Home = () => {
         
         // Add the new task to the list
         setTasks([...updatedTasks, newTask]);
+      } else {
+        setTasks(updatedTasks);
       }
+    } else {
+      // For non-repeating tasks or tasks being marked incomplete
+      const updatedTask = { 
+        ...taskToToggle, 
+        completed: !taskToToggle.completed 
+      };
+      
+      // Update reminder if the task has one
+      if (updatedTask.reminder && updatedTask.reminder.enabled) {
+        if (updatedTask.completed) {
+          reminderService.cancelReminder(id);
+        } else {
+          reminderService.setReminder(updatedTask);
+        }
+      }
+      
+      setTasks(tasks.map(task => task.id === id ? updatedTask : task));
     } else {
       setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
     }
@@ -210,7 +228,7 @@ const Home = () => {
                 <option value="high">High Priority</option>
                 <option value="medium">Medium Priority</option>
                 <option value="low">Low Priority</option>
-                                <option value="recurring">Recurring Tasks</option>
+                <option value="recurring">Recurring Tasks</option>
               </select>
             </div>
             
@@ -262,12 +280,12 @@ const Home = () => {
               {tasks.filter(task => task.completed).length}
             </p>
           </div>
-                          <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-                            <p className="text-surface-500 dark:text-surface-400 text-sm">Recurring</p>
-                            <p className="text-2xl font-bold text-primary dark:text-primary-light">
-                              {tasks.filter(task => task.isRepeating).length}
-                            </p>
-                          </div>
+          <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+            <p className="text-surface-500 dark:text-surface-400 text-sm">Recurring</p>
+            <p className="text-2xl font-bold text-primary dark:text-primary-light">
+              {tasks.filter(task => task.isRepeating).length}
+            </p>
+          </div>
           <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-lg p-4">
             <p className="text-surface-500 dark:text-surface-400 text-sm">Pending</p>
             <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
