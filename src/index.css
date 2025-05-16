@@ -321,7 +321,82 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   
   .animate-scale-in {
-    animation: scaleIn 0.3s ease-out forwards;
+    animation: scaleIn 0.3s ease-out;
+  }
+  
+  /* Kanban board styles */
+  .kanban-container {
+    @apply pb-4 gap-5;
+    scroll-padding: 1rem;
+  }
+  
+  .kanban-column {
+    @apply flex flex-col min-w-[280px] h-fit;
+    max-height: calc(100vh - 8rem);
+  }
+  
+  .kanban-tasks {
+    @apply flex-1 overflow-y-auto scrollbar-hide;
+  }
+  
+  /* Hover and active states for draggable task cards */
+  .task-card {
+    @apply border border-transparent;
+  }
+  
+  .task-card:hover {
+    @apply border-surface-200 dark:border-surface-700 rounded-lg shadow-sm;
+  }
+  
+  /* Style for tasks being dragged */
+  .task-card-dragging {
+    @apply shadow-lg border-primary dark:border-primary-light bg-white dark:bg-surface-800 opacity-90 rotate-1;
+  }
+  
+  /* Drop target indicator */
+  .kanban-drop-target {
+    @apply border-2 border-dashed border-primary dark:border-primary-light bg-primary/5 dark:bg-primary-dark/10 rounded-lg;
+  }
+  
+  /* Task category pills */
+  .category-pill {
+    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full;
+  }
+  
+  /* Animations for drag and drop */
+  @keyframes taskPulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+    70% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+  }
+  
+  /* Animation when a task is dropped in a new column */
+  .task-card-dropped {
+    animation: taskPulse 0.8s ease-out;
+  }
+  
+  /* Enhanced animations for task details */
+  .task-details-enter {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .task-details-enter-active {
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: max-height 300ms ease-out, opacity 300ms ease-out, transform 300ms ease-out;
+    overflow: hidden;
   }
 }
 

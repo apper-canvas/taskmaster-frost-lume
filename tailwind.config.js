@@ -31,6 +31,18 @@ export default {
           900: '#0f172a'   // Darkest
         }      
       },
+    safelist: [
+      // Ensure all category color variants are generated
+      { pattern: /bg-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(50|100|200|900)/ },
+      { pattern: /border-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(300|500|700)/ },
+      { pattern: /text-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(300|800)/ },
+      { pattern: /dark:bg-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(900)\/(\d+)/ },
+      { pattern: /dark:text-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(300)/ },
+      { pattern: /dark:border-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)-(700)/ },
+      // Ensure all category pill styles are generated
+      { pattern: /category-pill-(blue|green|red|yellow|purple|pink|indigo|teal|orange|gray)/ },
+      { pattern: /bg-opacity-(\d+)/ }
+    ],
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
         heading: ['Inter', 'ui-sans-serif', 'system-ui']

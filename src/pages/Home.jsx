@@ -13,6 +13,7 @@ const Home = () => {
   
   const [filter, setFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'board'
   
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
@@ -35,6 +36,8 @@ const Home = () => {
   const FilterIcon = getIcon('Filter');
   const SortIcon = getIcon('ArrowUpDown');
   const TrashIcon = getIcon('Trash2');
+  const ViewIcon = getIcon('Layers');
+  const CategoryIcon = getIcon('Tag');
   const BellIcon = getIcon('Bell');
   const RepeatIcon = getIcon('Repeat');
   
@@ -157,6 +160,8 @@ const Home = () => {
     if (filter === 'medium') return task.priority === 'medium';
     if (filter === 'low') return task.priority === 'low';
     if (filter === 'recurring') return task.isRepeating;
+    // Add category filter
+    if (filter.startsWith('category:')) return task.category === filter.split(':')[1];
     return true;
   });
   
@@ -210,8 +215,56 @@ const Home = () => {
     if (Notification.permission !== 'granted') {
       await reminderService.requestPermission();
     }
+      toast.info('Reminder: No tasks due tomorrow');
+      return false;
+    }
+    
+    // Request notification permission if needed
+    if (Notification.permission !== 'granted') {
+      await reminderService.requestPermission();
+    }
     
     // Show a toast and notification for each task
+    dueTomorrow.forEach((task, index) => {
+      // Add a small delay between notifications to avoid overwhelming the user
+      setTimeout(() => {
+        toast.info(`Reminder: Due tomorrow: "${task.title}" (${task.priority} priority)`);
+        if (Notification.permission === 'granted') {
+          new Notification('Task Due Tomorrow', { body: task.title, icon: '/favicon.ico' });
+        }
+      }, index * 300);
+    });
+    
+    return true;
+  };
+  
+  // Get categories from tasks
+  const getCategories = () => {
+    const categories = tasks
+      .filter(task => task.category)
+      .map(task => task.category);
+    return [...new Set(categories)];
+  };
+  
+  // Count tasks by category
+  const getCategoryCounts = () => {
+    const categories = getCategories();
+    const counts = {};
+    
+    categories.forEach(category => {
+      counts[category] = tasks.filter(task => task.category === category).length;
+    });
+    
+    return counts;
+  };
+  
+  // Show upcoming tasks by category
+  const showUpcomingTasksByCategory = async () => {
+    const categories = getCategories();
+    
+    if (categories.length === 0) {
+      toast.info('Reminder: No categories found');
+      return false;
     dueTomorrow.forEach((task, index) => {
       // Add a small delay between notifications to avoid overwhelming the user
       setTimeout(() => {
@@ -219,15 +272,20 @@ const Home = () => {
         if (Notification.permission === 'granted') {
           new Notification('Task Due Tomorrow', { body: task.title, icon: '/favicon.ico' });
         }
-      }, index * 300);
-    });
+    // Show a toast and notification for each category
+    categories.forEach((category, index) => {
+      const categoryTasks = tasks.filter(task => 
+        task.category === category && 
+        !task.completed && 
+        task.dueDate
+      );
+      
+      if (categoryTasks.length === 0) return;
+      
   };
   
-  return (
-    <div className="container mx-auto px-4 pt-8 pb-16">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        toast.info(`Reminder: ${category} category has ${categoryTasks.length} active tasks`);
+      }, index * 200);
         transition={{ duration: 0.5 }}
       >
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
@@ -258,47 +316,54 @@ const Home = () => {
                 <option value="medium">Medium Priority</option>
                 <option value="low">Low Priority</option>
                 <option value="recurring">Recurring Tasks</option>
+                {getCategories().map(category => (
+                  <option key={category} value={`category:${category}`}>
+                    Category: {category}
+                  </option>
+                ))}
               </select>
             </div>
             
-            <div className="relative flex-1 sm:flex-none min-w-40">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <SortIcon className="w-4 h-4 text-surface-500" />
+            <div className="flex flex-wrap gap-3">
+              <div className="relative flex-1 sm:flex-none min-w-40">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <SortIcon className="w-4 h-4 text-surface-500" />
+                </div>
+                <select
+                  className="pl-10 pr-4 py-2 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-primary"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="dueDate">Due Date</option>
+                  <option value="priority">Priority</option>
+                  <option value="alphabetical">Alphabetical</option>
+                </select>
               </div>
-              <select
-                className="pl-10 pr-4 py-2 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-primary"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
+              
+              <button
+                onClick={notifyTomorrowsTasks}
+                className="flex items-center justify-center space-x-1 px-4 py-2 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light rounded-lg text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+                title="Get notifications for tasks due tomorrow"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="dueDate">Due Date</option>
-                <option value="priority">Priority</option>
-                <option value="alphabetical">Alphabetical</option>
-              </select>
+                <BellIcon className="w-4 h-4" />
+                <span>Tomorrow's Tasks</span>
+                {tomorrowsTasks.length > 0 && (
+                  <span className="ml-1 flex items-center justify-center bg-primary text-white text-xs rounded-full h-5 w-5">
+                    {tomorrowsTasks.length}
+                  </span>
+                )}
+              </button>
+              
+              <button
+                onClick={clearCompleted}
+                className="flex items-center justify-center space-x-1 px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+              >
+                <TrashIcon className="w-4 h-4" />
+                <span>Clear Completed</span>
+              </button>
             </div>
-
-            <button
-              onClick={notifyTomorrowsTasks}
-              className="flex items-center justify-center space-x-1 px-4 py-2 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light rounded-lg text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
-              title="Get notifications for tasks due tomorrow"
-            >
-              <BellIcon className="w-4 h-4" />
-              <span>Tomorrow's Tasks</span>
-              {tomorrowsTasks.length > 0 && (
-                <span className="ml-1 flex items-center justify-center bg-primary text-white text-xs rounded-full h-5 w-5">
-                  {tomorrowsTasks.length}
-                </span>
-              )}
-            </button>
-            
-            <button
-              onClick={clearCompleted}
-              className="flex items-center justify-center space-x-1 px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-            >
-              <TrashIcon className="w-4 h-4" />
-              <span>Clear Completed</span>
-            </button>
           </div>
         </div>
       </motion.div>
@@ -312,7 +377,7 @@ const Home = () => {
       
       <div className="mt-8 bg-white dark:bg-surface-800 rounded-xl shadow-soft p-6">
         <h2 className="text-xl font-semibold mb-4">Task Stats</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
             <p className="text-surface-500 dark:text-surface-400 text-sm">Total Tasks</p>
             <p className="text-2xl font-bold text-primary">{tasks.length}</p>
@@ -341,6 +406,36 @@ const Home = () => {
               {tasks.filter(task => task.priority === 'high').length}
             </p>
           </div>
+          
+          {/* Categories Section */}
+          {getCategories().length > 0 && (
+            <div className="col-span-full mt-2">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <CategoryIcon className="w-5 h-5 text-primary" />
+                Categories
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {getCategories().map(category => {
+                  const categoryTasks = tasks.filter(t => t.category === category);
+                  const categoryColor = categoryTasks[0]?.categoryColor || 'blue';
+                  const completedCount = categoryTasks.filter(t => t.completed).length;
+                  const totalCount = categoryTasks.length;
+                  const completionPercentage = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
+                  
+                  return (
+                    <div key={category} className={`border-l-4 rounded-lg p-3 bg-${categoryColor}-50 dark:bg-${categoryColor}-900/10 border-${categoryColor}-500`}>
+                      <h4 className="font-medium text-surface-800 dark:text-surface-100">{category}</h4>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-sm text-surface-600 dark:text-surface-400">{totalCount} tasks</p>
+                        <p className="text-sm font-medium">{completionPercentage}% done</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
