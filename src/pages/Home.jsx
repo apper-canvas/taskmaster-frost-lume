@@ -35,6 +35,7 @@ const Home = () => {
   const FilterIcon = getIcon('Filter');
   const SortIcon = getIcon('ArrowUpDown');
   const TrashIcon = getIcon('Trash2');
+  const BellIcon = getIcon('Bell');
   const RepeatIcon = getIcon('Repeat');
   
   // Add a new task
@@ -191,6 +192,43 @@ const Home = () => {
     setTasks(tasks.filter(task => !task.completed));
     toast.success(`Cleared ${completedCount} completed ${completedCount === 1 ? 'task' : 'tasks'}`);
   };
+
+  // Get tomorrow's date in YYYY-MM-DD format
+  const getTomorrowsDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
+  // Count tasks due tomorrow
+  const tomorrowsTasks = tasks.filter(task => task.dueDate === getTomorrowsDate() && !task.completed);
+
+  // Show reminders for tomorrow's tasks
+  const notifyTomorrowsTasks = async () => {
+    const tomorrowDate = getTomorrowsDate();
+    const dueTomorrow = tasks.filter(task => task.dueDate === tomorrowDate && !task.completed);
+    
+    if (dueTomorrow.length === 0) {
+      toast.info('No tasks due tomorrow');
+      return;
+    }
+    
+    // Request notification permission if needed
+    if (Notification.permission !== 'granted') {
+      await reminderService.requestPermission();
+    }
+    
+    // Show a toast and notification for each task
+    dueTomorrow.forEach((task, index) => {
+      // Add a small delay between notifications to avoid overwhelming the user
+      setTimeout(() => {
+        toast.info(`Due tomorrow: "${task.title}" (${task.priority} priority)`);
+        if (Notification.permission === 'granted') {
+          new Notification('Task Due Tomorrow', { body: task.title, icon: '/favicon.ico' });
+        }
+      }, index * 300);
+    });
+  };
   
   return (
     <div className="container mx-auto px-4 pt-8 pb-16">
@@ -211,7 +249,7 @@ const Home = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
-            <div className="relative flex-1 sm:flex-none">
+            <div className="relative flex-1 sm:flex-none min-w-40">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <FilterIcon className="w-4 h-4 text-surface-500" />
               </div>
@@ -230,7 +268,7 @@ const Home = () => {
               </select>
             </div>
             
-            <div className="relative flex-1 sm:flex-none">
+            <div className="relative flex-1 sm:flex-none min-w-40">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <SortIcon className="w-4 h-4 text-surface-500" />
               </div>
@@ -246,6 +284,20 @@ const Home = () => {
                 <option value="alphabetical">Alphabetical</option>
               </select>
             </div>
+
+            <button
+              onClick={notifyTomorrowsTasks}
+              className="flex items-center justify-center space-x-1 px-4 py-2 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light rounded-lg text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+              title="Get notifications for tasks due tomorrow"
+            >
+              <BellIcon className="w-4 h-4" />
+              <span>Tomorrow's Tasks</span>
+              {tomorrowsTasks.length > 0 && (
+                <span className="ml-1 flex items-center justify-center bg-primary text-white text-xs rounded-full h-5 w-5">
+                  {tomorrowsTasks.length}
+                </span>
+              )}
+            </button>
             
             <button
               onClick={clearCompleted}

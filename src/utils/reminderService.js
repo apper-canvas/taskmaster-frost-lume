@@ -155,6 +155,18 @@ class ReminderService {
       });
     }
   }
+
+  // Get tasks due tomorrow
+  getTomorrowsTasks(tasks) {
+    if (!tasks || !Array.isArray(tasks)) return [];
+    
+    // Get tomorrow's date in YYYY-MM-DD format
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    return tasks.filter(task => task.dueDate === tomorrowStr && !task.completed);
+  }
 }
 
 export default new ReminderService();
