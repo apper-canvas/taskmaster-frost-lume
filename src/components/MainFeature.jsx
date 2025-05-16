@@ -24,7 +24,6 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const ChevronDownIcon = getIcon('ChevronDown');
   const ChevronUpIcon = getIcon('ChevronUp');
   const BellIcon = getIcon('Bell');
-  const LayersIcon = getIcon('Layers');
   const MoveIcon = getIcon('Move');
   const ListIcon = getIcon('List');
   
@@ -508,11 +507,11 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                   </div>
                   
                   {dueDate && (
-                   <>
-                    <div className="mb-4">
-                      <div className="flex items-center mb-2">
+                    <>
+                      <div className="mb-4">
+                        <div className="flex items-center mb-2">
                       <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
-                        <input
+                            <input
                           type="checkbox"
                           className="mr-2 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
                           checked={!!category}
@@ -525,9 +524,9 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                               setShowCategoryOptions(false);
                             }
                           }}
-                        />
-                        Add Category
-                      </label>
+                            />
+                            Add Category
+                          </label>
                       
                       {!!category && (
                         <button
@@ -542,166 +541,166 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                           )}
                         </button>
                       )}
-                    </div>
+                        </div>
                     
-                    <AnimatePresence>
-                      {!!category && showCategoryOptions && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
-                        >
-                          <div className="mb-2">
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {predefinedCategories.map(cat => (
-                                <button
-                                  key={cat}
-                                  type="button"
-                                  onClick={() => {
-                                    setCategory(cat);
-                                    setCustomCategory('');
-                                  }}
-                                  className={`text-xs py-1.5 px-3 rounded-lg border ${
-                                    category === cat
-                                      ? categoryColors[categoryColor] + ' border-2'
-                                      : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300 border-surface-200 dark:border-surface-600'
-                                  }`}
-                                >
-                                  {cat}
-                                </button>
-                              ))}
-                            </div>
-                            
-                            <div className="flex items-center gap-2 mb-3">
-                              <input 
-                                type="text"
-                                placeholder="Custom category"
-                                value={customCategory}
-                                onChange={(e) => {
-                                  setCustomCategory(e.target.value);
-                                  if (e.target.value) {
-                                    setCategory(e.target.value);
-                                  } else {
-                                    setCategory('Work');
-                                  }
-                                }}
-                                className="flex-1 py-1 text-sm"
-                              />
-                            </div>
-                            
-                            <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
-                              Category Color:
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-2">
-                              {Object.keys(categoryColors).map(color => (
-                                <button
-                                  key={color}
-                                  type="button"
-                                  onClick={() => setCategoryColor(color)}
-                                  className={`w-6 h-6 rounded-full ${categoryColors[color].split(' ')[0]} ${
-                                    categoryColor === color ? 'ring-2 ring-offset-2 ring-primary' : ''
-                                  }`}
-                                  aria-label={`Set color to ${color}`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <div className="mb-4">
-                    <div className="flex items-center mb-2">
-                        <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
-                          <input
-                            type="checkbox"
-                            className="mr-2 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
-                            checked={reminderEnabled}
-                            onChange={(e) => {
-                              const enabled = e.target.checked;
-                              setReminderEnabled(enabled);
-                              if (enabled) {
-                                setShowReminderOptions(true);
+                        <AnimatePresence>
+                          {!!category && showCategoryOptions && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
+                            >
+                              <div className="mb-2">
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  {predefinedCategories.map(cat => (
+                                    <button
+                                      key={cat}
+                                      type="button"
+                                      onClick={() => {
+                                        setCategory(cat);
+                                        setCustomCategory('');
+                                      }}
+                                      className={`text-xs py-1.5 px-3 rounded-lg border ${
+                                        category === cat
+                                          ? categoryColors[categoryColor] + ' border-2'
+                                          : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300 border-surface-200 dark:border-surface-600'
+                                      }`}
+                                    >
+                                      {cat}
+                                    </button>
+                                  ))}
+                                </div>
                                 
-                                // Request notification permission if not granted
-                                if (notificationPermission !== 'granted') {
-                                  requestNotificationPermission();
-                                }
-                              }
-                            }}
-                          />
-                          Set Reminder
-                        </label>
-                        
-                        {reminderEnabled && (
-                          <button
-                            type="button"
-                            onClick={() => setShowReminderOptions(!showReminderOptions)}
-                            className="ml-auto p-1 text-surface-500 hover:text-primary"
-                          >
-                            {showReminderOptions ? (
-                              <ChevronUpIcon className="h-4 w-4" />
-                            ) : (
-                              <ChevronDownIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                        )}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <input 
+                                    type="text"
+                                    placeholder="Custom category"
+                                    value={customCategory}
+                                    onChange={(e) => {
+                                      setCustomCategory(e.target.value);
+                                      if (e.target.value) {
+                                        setCategory(e.target.value);
+                                      } else {
+                                        setCategory('Work');
+                                      }
+                                    }}
+                                    className="flex-1 py-1 text-sm"
+                                  />
+                                </div>
+                                
+                                <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
+                                  Category Color:
+                                </p>
+                                
+                                <div className="flex flex-wrap gap-2">
+                                  {Object.keys(categoryColors).map(color => (
+                                    <button
+                                      key={color}
+                                      type="button"
+                                      onClick={() => setCategoryColor(color)}
+                                      className={`w-6 h-6 rounded-full ${categoryColors[color].split(' ')[0]} ${
+                                        categoryColor === color ? 'ring-2 ring-offset-2 ring-primary' : ''
+                                      }`}
+                                      aria-label={`Set color to ${color}`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                       
-                      <AnimatePresence>
-                        {reminderEnabled && showReminderOptions && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
-                          >
-                            <div className="mb-2">
-                              <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
-                                Remind me before:
-                              </p>
-                              
-                              <div className="flex items-center gap-2">
-                                <select 
-                                  value={reminderMinutesBefore} 
-                                  onChange={(e) => setReminderMinutesBefore(Number(e.target.value))}
-                                  className="flex-1 py-1 text-sm"
-                                >
-                                  <option value="0">At due time</option>
-                                  <option value="5">5 minutes before</option>
-                                  <option value="10">10 minutes before</option>
-                                  <option value="15">15 minutes before</option>
-                                  <option value="30">30 minutes before</option>
-                                  <option value="60">1 hour before</option>
-                                  <option value="120">2 hours before</option>
-                                  <option value="1440">1 day before</option>
-                                </select>
-                              </div>
-                              
-                              {notificationPermission !== 'granted' && (
-                                <div className="mt-2 p-2 text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-amber-800 dark:text-amber-300">
-                                  <p className="flex items-center gap-1">
-                                    <AlertCircleIcon className="h-3 w-3" />
-                                    Browser notifications are not enabled. 
-                                    <button 
-                                      onClick={requestNotificationPermission}
-                                      className="text-primary underline hover:no-underline"
-                                    >Enable now</button>
-                                  </p>
-                                </div>
+                      <div className="mb-4">
+                        <div className="flex items-center mb-2">
+                          <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
+                            <input
+                              type="checkbox"
+                              className="mr-2 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
+                              checked={reminderEnabled}
+                              onChange={(e) => {
+                                const enabled = e.target.checked;
+                                setReminderEnabled(enabled);
+                                if (enabled) {
+                                  setShowReminderOptions(true);
+                                  
+                                  // Request notification permission if not granted
+                                  if (notificationPermission !== 'granted') {
+                                    requestNotificationPermission();
+                                  }
+                                }
+                              }}
+                            />
+                            Set Reminder
+                          </label>
+                          
+                          {reminderEnabled && (
+                            <button
+                              type="button"
+                              onClick={() => setShowReminderOptions(!showReminderOptions)}
+                              className="ml-auto p-1 text-surface-500 hover:text-primary"
+                            >
+                              {showReminderOptions ? (
+                                <ChevronUpIcon className="h-4 w-4" />
+                              ) : (
+                                <ChevronDownIcon className="h-4 w-4" />
                               )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                  </>
-                  
+                            </button>
+                          )}
+                        </div>
+                        
+                        <AnimatePresence>
+                          {reminderEnabled && showReminderOptions && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
+                            >
+                              <div className="mb-2">
+                                <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
+                                  Remind me before:
+                                </p>
+                                
+                                <div className="flex items-center gap-2">
+                                  <select 
+                                    value={reminderMinutesBefore} 
+                                    onChange={(e) => setReminderMinutesBefore(Number(e.target.value))}
+                                    className="flex-1 py-1 text-sm"
+                                >
+                                    <option value="0">At due time</option>
+                                    <option value="5">5 minutes before</option>
+                                    <option value="10">10 minutes before</option>
+                                    <option value="15">15 minutes before</option>
+                                    <option value="30">30 minutes before</option>
+                                    <option value="60">1 hour before</option>
+                                    <option value="120">2 hours before</option>
+                                    <option value="1440">1 day before</option>
+                                  </select>
+                                </div>
+                                
+                                {notificationPermission !== 'granted' && (
+                                  <div className="mt-2 p-2 text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-amber-800 dark:text-amber-300">
+                                    <p className="flex items-center gap-1">
+                                      <AlertCircleIcon className="h-3 w-3" />
+                                      Browser notifications are not enabled. 
+                                      <button 
+                                        onClick={requestNotificationPermission}
+                                        className="text-primary underline hover:no-underline"
+                                      >Enable now</button>
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </>
+                   )}
                   <div className="mb-4">
                     <div className="flex items-center mb-2">
                       <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
