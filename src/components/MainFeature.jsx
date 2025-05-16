@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-toastify';
 import getIcon from '../utils/iconUtils';
+import reminderService from '../utils/reminderService';
 
 const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   // Icon declarations
@@ -20,6 +21,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const TagIcon = getIcon('Tag');
   const ChevronDownIcon = getIcon('ChevronDown');
   const ChevronUpIcon = getIcon('ChevronUp');
+  const BellIcon = getIcon('Bell');
   
   // Form state
   const [title, setTitle] = useState('');
@@ -34,6 +36,10 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const [expanded, setExpanded] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [showRepeatOptions, setShowRepeatOptions] = useState(false);
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderMinutesBefore, setReminderMinutesBefore] = useState(30);
+  const [showReminderOptions, setShowReminderOptions] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [showTaskDetails, setShowTaskDetails] = useState(null);
   
   // Form submission
@@ -62,8 +68,10 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
             : task
       );
       
+      let updatedTasks = [...tasks]; // Create a copy of tasks array
+      
       // Update the recurring properties if the task is repeating
-      updatedTasks = updatedTasks.map(task => 
+      updatedTasks = updatedTasks.map(task =>
         task.id === editingTaskId 
           ? { ...task, isRepeating, repeatType, customInterval, customUnit }
           : task
@@ -71,6 +79,17 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
       
       addTask(updatedTasks);
       toast.success('Task updated successfully!');
+
+      // Update reminder if enabled
+      if (reminderEnabled && dueDate) {
+        const taskToUpdate = updatedTasks.find(t => t.id === editingTaskId);
+        taskToUpdate.reminder = {
+          enabled: true,
+          minutesBefore: reminderMinutesBefore
+        };
+        reminderService.setReminder(taskToUpdate);
+        toast.info(`Reminder set for ${reminderMinutesBefore} minutes before due date`);
+      }
       
       // Reset editing state
       setEditingTaskId(null);
@@ -91,7 +110,15 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
         customUnit,
         // Track original due date for recurring calculations
         originalDueDate: dueDate || null,
+        // Add reminder data if enabled
+        reminder: reminderEnabled && dueDate ? {
+          enabled: true,
+          minutesBefore: reminderMinutesBefore
+        } : null
       };
+      
+      // Set reminder if enabled
+      if (reminderEnabled && dueDate) reminderService.setReminder(newTask);
       
       addTask(newTask);
     }
@@ -105,6 +132,8 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setRepeatType('daily');
     setCustomInterval(1);
     setCustomUnit('days');
+    setReminderEnabled(false);
+    setReminderMinutesBefore(30);
     setFormError('');
     setShowRepeatOptions(false);
     setExpanded(false);
@@ -120,6 +149,10 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setCustomInterval(task.customInterval || 1);
     setCustomUnit(task.customUnit || 'days');
     setDueDate(task.dueDate || '');
+    // Set reminder options
+    setReminderEnabled(task.reminder && task.reminder.enabled || false);
+    setReminderMinutesBefore(task.reminder && task.reminder.minutesBefore || 30);
+    setShowReminderOptions(task.reminder && task.reminder.enabled || false);
     setEditingTaskId(task.id);
     setExpanded(true);
     setShowRepeatOptions(task.isRepeating || false);
@@ -136,6 +169,8 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setRepeatType('daily');
     setCustomInterval(1);
     setCustomUnit('days');
+    setReminderEnabled(false);
+    setReminderMinutesBefore(30);
     setEditingTaskId(null);
     setShowRepeatOptions(false);
     setExpanded(false);
@@ -149,6 +184,14 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     } else {
       setShowTaskDetails(taskId);
     }
+  };
+  
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    const granted = await reminderService.requestPermission();
+    setNotificationPermission(Notification.permission);
+    if (granted) toast.success("Notification permission granted!");
+    return granted;
   };
   
   // Helper for priority styling
@@ -308,6 +351,95 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                       min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
+                  
+                  {dueDate && (
+                    <div className="mb-4">
+                      <div className="flex items-center mb-2">
+                        <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
+                          <input
+                            type="checkbox"
+                            className="mr-2 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
+                            checked={reminderEnabled}
+                            onChange={(e) => {
+                              const enabled = e.target.checked;
+                              setReminderEnabled(enabled);
+                              if (enabled) {
+                                setShowReminderOptions(true);
+                                
+                                // Request notification permission if not granted
+                                if (notificationPermission !== 'granted') {
+                                  requestNotificationPermission();
+                                }
+                              }
+                            }}
+                          />
+                          Set Reminder
+                        </label>
+                        
+                        {reminderEnabled && (
+                          <button
+                            type="button"
+                            onClick={() => setShowReminderOptions(!showReminderOptions)}
+                            className="ml-auto p-1 text-surface-500 hover:text-primary"
+                          >
+                            {showReminderOptions ? (
+                              <ChevronUpIcon className="h-4 w-4" />
+                            ) : (
+                              <ChevronDownIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      
+                      <AnimatePresence>
+                        {reminderEnabled && showReminderOptions && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
+                          >
+                            <div className="mb-2">
+                              <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
+                                Remind me before:
+                              </p>
+                              
+                              <div className="flex items-center gap-2">
+                                <select 
+                                  value={reminderMinutesBefore} 
+                                  onChange={(e) => setReminderMinutesBefore(Number(e.target.value))}
+                                  className="flex-1 py-1 text-sm"
+                                >
+                                  <option value="0">At due time</option>
+                                  <option value="5">5 minutes before</option>
+                                  <option value="10">10 minutes before</option>
+                                  <option value="15">15 minutes before</option>
+                                  <option value="30">30 minutes before</option>
+                                  <option value="60">1 hour before</option>
+                                  <option value="120">2 hours before</option>
+                                  <option value="1440">1 day before</option>
+                                </select>
+                              </div>
+                              
+                              {notificationPermission !== 'granted' && (
+                                <div className="mt-2 p-2 text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-amber-800 dark:text-amber-300">
+                                  <p className="flex items-center gap-1">
+                                    <AlertCircleIcon className="h-3 w-3" />
+                                    Browser notifications are not enabled. 
+                                    <button 
+                                      onClick={requestNotificationPermission}
+                                      className="text-primary underline hover:no-underline"
+                                    >Enable now</button>
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                   
                   <div className="mb-4">
                     <div className="flex items-center mb-2">
@@ -535,6 +667,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                                   </span>
                                 )}
                                 
+                                {task.reminder && task.reminder.enabled && (
+                                  <span className="text-xs flex items-center gap-1 px-2 py-1 bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-secondary-light rounded-full">
+                                    <BellIcon className="w-3 h-3" />
+                                    Reminder
+                                  </span>
+                                )}
+                                
                                 {task.dueDate && (
                                   <span className="text-xs flex items-center gap-1 px-2 py-1 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 rounded-full">
                                     <CalendarIcon className="w-3 h-3" />
@@ -562,6 +701,16 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                                    <RepeatIcon className="w-3 h-3" />
                                    {getRepeatText(task)}
                                  </span>
+                                )}
+                                
+                                {task.reminder && task.reminder.enabled && (
+                                  <span className="flex items-center gap-1">
+                                    <BellIcon className="w-3 h-3" />
+                                    {task.reminder.minutesBefore === 0 
+                                      ? 'At due time' 
+                                      : `${task.reminder.minutesBefore} ${task.reminder.minutesBefore === 1 ? 'minute' : 'minutes'} before`
+                                    }
+                                  </span>
                                )}
                             </div>
                             

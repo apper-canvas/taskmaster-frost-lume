@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
+import reminderService from '../utils/reminderService';
 import MainFeature from '../components/MainFeature';
 import getIcon from '../utils/iconUtils';
 
@@ -15,6 +16,20 @@ const Home = () => {
   
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
+  // Set up reminders for tasks with due dates when component mounts
+  useEffect(() => {
+    tasks.forEach(task => {
+      if (task.dueDate && task.reminder && task.reminder.enabled) {
+        reminderService.setReminder(task);
+      }
+    });
+    
+    // Show notification permission prompt if there are tasks with reminders
+    if (tasks.some(task => task.reminder && task.reminder.enabled)) {
+      reminderService.requestPermission();
+    }
+  }, []);
+
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
   
@@ -32,11 +47,16 @@ const Home = () => {
       return;
     }
     
+    
+    // Update tasks array
+    setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
     // For a new task, add it to the array
-    setTasks(prevTasks => [...prevTasks, task]);
-    toast.success('Task added successfully!');
-  };
-  
+    // Update reminder if the task has one and has been completed
+    if (task.reminder && task.reminder.enabled && !task.completed) {
+      reminderService.cancelReminder(id);
+    } else if (task.reminder && task.reminder.enabled && task.completed) {
+      reminderService.setReminder({...task, completed: false});
+    }
   // Toggle task completion
   const toggleComplete = (id) => {
     const taskToToggle = tasks.find(task => task.id === id);
@@ -47,14 +67,13 @@ const Home = () => {
     if (taskToToggle.isRepeating && !taskToToggle.completed) {
       // For repeating tasks that are being marked complete, we need to:
       // 1. Mark the current instance as complete
+    // Cancel any reminders for this task
+    reminderService.cancelReminder(id);
+    
       // 2. Create the next instance with an updated due date
       
       // First, update the current task to be completed
       const updatedTasks = tasks.map(task => 
-        task.id === id ? { ...task, completed: true } : task
-      );
-      
-      // Then, calculate the next due date if a due date exists
       if (taskToToggle.dueDate) {
         const currentDueDate = new Date(taskToToggle.dueDate);
         let nextDueDate = new Date(currentDueDate);
