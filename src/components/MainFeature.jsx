@@ -56,28 +56,18 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     if (editingTaskId) {
       // Update existing task
       const updatedTasks = tasks.map(task => 
-        task.id === editingTaskId 
+        task.id === editingTaskId
           ? { 
               ...task, 
               title, 
               description, 
               priority, 
               dueDate: dueDate || null,
-              updatedAt: new Date().toISOString()
+              updatedAt: new Date().toISOString(),
+              isRepeating, repeatType, customInterval, customUnit,
+              reminder: reminderEnabled && dueDate ? { enabled: true, minutesBefore: reminderMinutesBefore } : null
             } 
-            : task
-      );
-      
-      let updatedTasks = [...tasks]; // Create a copy of tasks array
-      
-      // Update the recurring properties if the task is repeating
-      updatedTasks = updatedTasks.map(task =>
-        task.id === editingTaskId 
-          ? { ...task, isRepeating, repeatType, customInterval, customUnit }
-          : task
-      );
-      
-      addTask(updatedTasks);
+          : task);
       toast.success('Task updated successfully!');
 
       // Update reminder if enabled
