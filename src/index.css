@@ -328,8 +328,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
+}
   
-
+@layer utilities {
 @layer utilities {
   @keyframes scaleIn {
     from {
@@ -450,15 +451,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-clip: padding-box;
   }
 
-  .gradient-border::before {
-    content: '';
-    @apply absolute inset-0 rounded-lg -z-10 bg-gradient-to-r from-primary-light via-primary to-secondary opacity-0 transition-opacity duration-300;
-  }
-
-  .gradient-border:hover::before {
-    @apply opacity-100;
-  }
-
   /* Task card with gradient hover effect */
   .task-card-gradient {
     @apply bg-white dark:bg-surface-800 hover:bg-gradient-to-br hover:from-white hover:to-surface-50 dark:hover:from-surface-800 dark:hover:to-surface-700 transition-all duration-300;
@@ -550,4 +542,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .gradient-border {
   position: relative;
   background-clip: padding-box;
+}
+
+.gradient-border::before {
+  content: '';
+  @apply absolute inset-0 rounded-lg -z-10 bg-gradient-to-r from-primary-light via-primary to-secondary opacity-0 transition-opacity duration-300;
+}
+
+.gradient-border:hover::before {
+  @apply opacity-100;
 }
