@@ -49,7 +49,6 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     // Validation
     if (!title.trim()) {
       setFormError('Task title is required');
-      toast.error('Task title is required');
       return;
     }
     
@@ -68,7 +67,6 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
               reminder: reminderEnabled && dueDate ? { enabled: true, minutesBefore: reminderMinutesBefore } : null
             } 
           : task);
-      toast.success('Task updated successfully!');
 
       // Update reminder if enabled
       if (reminderEnabled && dueDate) {
@@ -180,7 +178,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const requestNotificationPermission = async () => {
     const granted = await reminderService.requestPermission();
     setNotificationPermission(Notification.permission);
-    if (granted) toast.success("Notification permission granted!");
+    if (granted) toast.info("Notification permission granted for reminders!");
     return granted;
   };
   

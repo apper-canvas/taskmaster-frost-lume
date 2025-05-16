@@ -96,7 +96,7 @@ class ReminderService {
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-      toast.error('An error occurred while requesting notification permission');
+      console.error('An error occurred while requesting notification permission');
       return false;
     }
     return false;

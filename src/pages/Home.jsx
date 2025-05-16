@@ -48,7 +48,6 @@ const Home = () => {
 
     // For a new task, add it to the array
     setTasks([...tasks, task]);
-    toast.success(`Task "${task.title}" added successfully!`);
     
   };
 
@@ -139,9 +138,7 @@ const Home = () => {
     const isCompleted = !taskToToggle.completed; // This is the new state (opposite of current)
     
     toast.info(
-      isCompleted 
-        ? `Task "${taskName}" marked as complete` 
-        : `Task "${taskName}" marked as incomplete`
+      `Reminder: Task due date changed for "${taskName}"`
     );
   };
   
@@ -149,7 +146,6 @@ const Home = () => {
   const deleteTask = (id) => {
     const taskName = tasks.find(task => task.id === id).title;
     setTasks(tasks.filter(task => task.id !== id));
-    toast.success(`Task "${taskName}" deleted successfully!`);
   };
   
   // Filter tasks
@@ -185,12 +181,9 @@ const Home = () => {
   const clearCompleted = () => {
     const completedCount = tasks.filter(task => task.completed).length;
     if (completedCount === 0) {
-      toast.info('No completed tasks to clear');
       return;
     }
-    
     setTasks(tasks.filter(task => !task.completed));
-    toast.success(`Cleared ${completedCount} completed ${completedCount === 1 ? 'task' : 'tasks'}`);
   };
 
   // Get tomorrow's date in YYYY-MM-DD format
