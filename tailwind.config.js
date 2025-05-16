@@ -44,8 +44,8 @@ export default {
       { pattern: /bg-opacity-(\d+)/ }
     ],
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-        heading: ['Inter', 'ui-sans-serif', 'system-ui']
+        sans: ['Georgia', 'Inter', 'ui-sans-serif', 'system-ui'],
+        heading: ['Georgia', 'Inter', 'ui-sans-serif', 'system-ui']
       },
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
@@ -59,10 +59,13 @@ export default {
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(135deg, var(--tw-gradient-stops))',
+        'gradient-primary-soft': 'linear-gradient(120deg, var(--tw-gradient-stops))',
+        'gradient-secondary': 'linear-gradient(150deg, var(--tw-gradient-stops))',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-calendar': 'linear-gradient(to right, var(--tw-gradient-stops))',
         'gradient-calendar-dark': 'linear-gradient(to right, var(--tw-gradient-stops))',
         'gradient-calendar-header': 'linear-gradient(to bottom, var(--tw-gradient-stops))',
+        'gradient-card': 'linear-gradient(160deg, var(--tw-gradient-stops))',
         'gradient-calendar-day': 'linear-gradient(to bottom right, var(--tw-gradient-stops))'
       },
       gradientColorStops: theme => ({
@@ -70,6 +73,9 @@ export default {
         'primary-end': theme('colors.primary.dark'),
         'secondary-start': theme('colors.secondary.light'),
         'secondary-end': theme('colors.secondary.dark'),
+        'card-start': theme('colors.white'),
+        'card-end': theme('colors.surface.50'),
+        'card-dark-end': theme('colors.surface.800'),
         'calendar-start': theme('colors.primary.light'),
         'calendar-mid': theme('colors.primary.DEFAULT'),
         'calendar-end': theme('colors.primary.dark'), 
