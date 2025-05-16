@@ -55,7 +55,10 @@ export default {
         'gradient-calendar-dark': 'linear-gradient(to right, var(--tw-gradient-stops))',
         'gradient-calendar-header': 'linear-gradient(to bottom, var(--tw-gradient-stops))',
         'gradient-card': 'linear-gradient(160deg, var(--tw-gradient-stops))',
-        'gradient-calendar-day': 'linear-gradient(to bottom right, var(--tw-gradient-stops))'
+        'gradient-calendar-day': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
+        'gradient-stat-card': 'linear-gradient(135deg, var(--tw-gradient-stops))',
+        'gradient-stat-primary': 'linear-gradient(120deg, var(--tw-gradient-stops))',
+        'gradient-stat-secondary': 'linear-gradient(120deg, var(--tw-gradient-stops))'
       },
       gradientColorStops: theme => ({
         'primary-start': theme('colors.primary.light'),
@@ -76,7 +79,14 @@ export default {
         'calendar-header-dark-start': theme('colors.surface.700'),
         'calendar-header-dark-end': theme('colors.surface.900'),
         'calendar-day-hover-start': theme('colors.primary.light'),
-        'calendar-day-hover-end': theme('colors.primary.DEFAULT')
+        'calendar-day-hover-end': theme('colors.primary.DEFAULT'),
+        'stat-primary-start': theme('colors.primary.light'),
+        'stat-primary-mid': theme('colors.primary.DEFAULT'),
+        'stat-primary-end': theme('colors.primary.dark'),
+        'stat-green-start': '#4ade80',
+        'stat-green-end': '#16a34a',
+        'stat-yellow-start': '#facc15',
+        'stat-yellow-end': '#ca8a04'
       })
     }
   },

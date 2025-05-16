@@ -1,5 +1,41 @@
 @tailwind base;
 @tailwind components;
+
+  /* Modern stat cards */
+  .stat-card {
+    @apply relative overflow-hidden rounded-xl shadow-md p-5 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1;
+  }
+  
+  .stat-card-primary {
+    @apply bg-gradient-stat-primary from-primary-light via-primary to-primary-dark text-white;
+  }
+  
+  .stat-card-success {
+    @apply bg-gradient-stat-primary from-stat-green-start to-stat-green-end text-white;
+  }
+  
+  .stat-card-warning {
+    @apply bg-gradient-stat-primary from-stat-yellow-start to-stat-yellow-end text-white;
+  }
+  
+  .stat-card-accent {
+    @apply bg-gradient-primary from-secondary-start to-secondary-end text-white;
+  }
+  
+  /* Stat card decorative element */
+  .stat-card::after {
+    content: '';
+    @apply absolute w-24 h-24 rounded-full bg-white/10 -top-6 -right-6;
+  }
+  
+  .stat-card::before {
+    content: '';
+    @apply absolute w-12 h-12 rounded-full bg-white/10 -bottom-2 -left-2;
+  }
+  
+  .stat-card:hover::after, .stat-card:hover::before {
+    @apply bg-white/20 transition-colors duration-300;
+  }
 @tailwind utilities;
 
 @layer base {
@@ -427,6 +463,48 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .task-card-gradient {
     @apply bg-white dark:bg-surface-800 hover:bg-gradient-to-br hover:from-white hover:to-surface-50 dark:hover:from-surface-800 dark:hover:to-surface-700 transition-all duration-300;
   }
+  
+  /* Circular progress */
+  .circular-progress {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: conic-gradient(var(--progress-color) var(--progress), transparent 0);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .circular-progress::before {
+    content: "";
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background: inherit;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Counter animation */
+  @keyframes countUp {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .stat-number {
+    @apply text-2xl font-bold;
+    animation: countUp 0.8s ease-out forwards;
+    animation-delay: calc(var(--index) * 0.1s);
+    opacity: 0;
+    transform: translateY(10px);
+  }
 
   /* Gradient text for highlights */
   .gradient-text {
@@ -473,4 +551,3 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   position: relative;
   background-clip: padding-box;
 }
-

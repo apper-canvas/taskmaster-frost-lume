@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { toast } from 'react-toastify';
 import reminderService from '../utils/reminderService';
 import MainFeature from '../components/MainFeature';
@@ -39,6 +39,10 @@ const Home = () => {
   const ViewIcon = getIcon('Layers');
   const CategoryIcon = getIcon('Tag');
   const BellIcon = getIcon('Bell');
+  const CheckIcon = getIcon('Check');
+  const ActivityIcon = getIcon('Activity');
+  const ClockIcon = getIcon('Clock');
+  const AlertTriangleIcon = getIcon('AlertTriangle');
   const RepeatIcon = getIcon('Repeat');
   
   // Add a new task
@@ -365,37 +369,152 @@ const Home = () => {
         deleteTask={deleteTask}
       />
       
-      <div className="mt-8 bg-white dark:bg-surface-800 rounded-xl shadow-soft p-6">
-        <h2 className="text-xl font-semibold mb-4">Task Stats</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-            <p className="text-surface-500 dark:text-surface-400 text-sm">Total Tasks</p>
-            <p className="text-2xl font-bold text-primary">{tasks.length}</p>
-          </div>
-          <div className="bg-green-100 dark:bg-green-900/20 rounded-lg p-4">
-            <p className="text-surface-500 dark:text-surface-400 text-sm">Completed</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {tasks.filter(task => task.completed).length}
+      <motion.div 
+        className="mt-10 mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Task Analytics & Insights
+          </h2>
+          <button 
+            onClick={showUpcomingTasksByCategory}
+            className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-white dark:bg-surface-800 shadow-sm hover:shadow-md transition-all duration-300"
+          >
+            <ActivityIcon className="w-4 h-4 text-primary" />
+            <span>Refresh Stats</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <motion.div 
+            className="stat-card stat-card-primary"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-white/80 font-medium mb-1">Total Tasks</p>
+                <p className="stat-number text-3xl font-bold" style={{ '--index': 0 }}>
+                  {tasks.length}
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-white/20">
+                <ListIcon className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            <p className="text-white/60 text-sm mt-4">
+              {tasks.length > 0 ? 'Managing your productivity' : 'Start adding tasks'}
             </p>
-          </div>
-          <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-            <p className="text-surface-500 dark:text-surface-400 text-sm">Recurring</p>
-            <p className="text-2xl font-bold text-primary dark:text-primary-light">
-              {tasks.filter(task => task.isRepeating).length}
-            </p>
-          </div>
-          <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-lg p-4">
-            <p className="text-surface-500 dark:text-surface-400 text-sm">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {tasks.filter(task => !task.completed).length}
-            </p>
-          </div>
-          <div className="bg-red-100 dark:bg-red-900/20 rounded-lg p-4">
-            <p className="text-surface-500 dark:text-surface-400 text-sm">High Priority</p>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {tasks.filter(task => task.priority === 'high').length}
-            </p>
-          </div>
+          </motion.div>
+          
+          <motion.div 
+            className="stat-card stat-card-success"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {(() => {
+              const completed = tasks.filter(task => task.completed).length;
+              const completionPercentage = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
+              
+              return (
+                <>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-white/80 font-medium mb-1">Completed</p>
+                      <p className="stat-number text-3xl font-bold" style={{ '--index': 1 }}>
+                        {completed}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/20">
+                      <CheckIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="circular-progress" style={{ '--progress': `${completionPercentage}%`, '--progress-color': 'white' }}>
+                      <span className="text-xs font-bold">{completionPercentage}%</span>
+                    </div>
+                    <p className="text-white/60 text-sm">
+                      {completionPercentage > 75 ? 'Great progress!' : 'Keep going!'}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </motion.div>
+          
+          <motion.div 
+            className="stat-card stat-card-warning"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {(() => {
+              const pending = tasks.filter(task => !task.completed).length;
+              const highPriority = tasks.filter(task => task.priority === 'high' && !task.completed).length;
+              const highPriorityPercentage = pending ? Math.round((highPriority / pending) * 100) : 0;
+              
+              return (
+                <>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-white/80 font-medium mb-1">Pending</p>
+                      <p className="stat-number text-3xl font-bold" style={{ '--index': 2 }}>
+                        {pending}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/20">
+                      <ClockIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="circular-progress" style={{ '--progress': `${highPriorityPercentage}%`, '--progress-color': 'white' }}>
+                      <span className="text-xs font-bold">{highPriorityPercentage}%</span>
+                    </div>
+                    <p className="text-white/60 text-sm">
+                      {highPriorityPercentage > 50 ? 'High priority tasks!' : 'Task priorities balanced'}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </motion.div>
+          
+          <motion.div 
+            className="stat-card stat-card-accent"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {(() => {
+              const recurring = tasks.filter(task => task.isRepeating).length;
+              const recurringPercentage = tasks.length ? Math.round((recurring / tasks.length) * 100) : 0;
+              
+              return (
+                <>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-white/80 font-medium mb-1">Recurring</p>
+                      <p className="stat-number text-3xl font-bold" style={{ '--index': 3 }}>
+                        {recurring}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/20">
+                      <RepeatIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="circular-progress" style={{ '--progress': `${recurringPercentage}%`, '--progress-color': 'white' }}>
+                      <span className="text-xs font-bold">{recurringPercentage}%</span>
+                    </div>
+                    <p className="text-white/60 text-sm">
+                      {recurringPercentage > 30 ? 'Good habit building!' : 'Consider adding routines'}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </motion.div>
           
           {/* Categories Section */}
           {getCategories().length > 0 && (
@@ -405,22 +524,40 @@ const Home = () => {
                 Categories
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {getCategories().map(category => {
                   const categoryTasks = tasks.filter(t => t.category === category);
                   const categoryColor = categoryTasks[0]?.categoryColor || 'blue';
                   const completedCount = categoryTasks.filter(t => t.completed).length;
                   const totalCount = categoryTasks.length;
                   const completionPercentage = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
+                  const highPriorityCount = categoryTasks.filter(t => t.priority === 'high').length;
                   
                   return (
-                    <div key={category} className={`border-l-4 rounded-lg p-3 bg-${categoryColor}-50 dark:bg-${categoryColor}-900/10 border-${categoryColor}-500`}>
-                      <h4 className="font-medium text-surface-800 dark:text-surface-100">{category}</h4>
-                      <div className="flex justify-between items-center mt-1">
-                        <p className="text-sm text-surface-600 dark:text-surface-400">{totalCount} tasks</p>
-                        <p className="text-sm font-medium">{completionPercentage}% done</p>
+                    <motion.div 
+                      key={category} 
+                      className={`rounded-xl p-4 bg-white dark:bg-surface-800 shadow-sm hover:shadow-md transition-all duration-300 border border-${categoryColor}-200 dark:border-${categoryColor}-900/30`}
+                      whileHover={{ y: -5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className={`w-3 h-3 rounded-full bg-${categoryColor}-500`}></div>
+                        <h4 className="font-medium text-surface-800 dark:text-surface-100">{category}</h4>
                       </div>
-                    </div>
+                      
+                      <div className="mt-2 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-surface-600 dark:text-surface-400">Tasks</span>
+                          <span className="font-medium">{totalCount}</span>
+                        </div>
+                        <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-1.5">
+                          <div 
+                            className={`bg-${categoryColor}-500 h-1.5 rounded-full`} 
+                            style={{ width: `${completionPercentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -428,7 +565,7 @@ const Home = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
