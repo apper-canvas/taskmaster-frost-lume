@@ -115,7 +115,7 @@ const Home = () => {
       } else {
         setTasks(updatedTasks);
       }
-    } else {
+    } else { // For non-repeating tasks or tasks being marked incomplete
       // For non-repeating tasks or tasks being marked incomplete
       const updatedTask = { 
         ...taskToToggle, 
@@ -123,21 +123,19 @@ const Home = () => {
       };
       
       // Update reminder if the task has one
-      if (updatedTask.reminder && updatedTask.reminder.enabled) {
+      if (updatedTask.reminder?.enabled) {
         if (updatedTask.completed) {
           reminderService.cancelReminder(id);
         } else {
           reminderService.setReminder(updatedTask);
         }
       }
-      
+
       setTasks(tasks.map(task => task.id === id ? updatedTask : task));
-    } else {
-      setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
     }
     
-    const taskName = tasks.find(task => task.id === id).title;
-    const isCompleted = !tasks.find(task => task.id === id).completed;
+    const taskName = taskToToggle.title;
+    const isCompleted = !taskToToggle.completed; // This is the new state (opposite of current)
     
     toast.info(
       isCompleted 
