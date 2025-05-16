@@ -68,6 +68,58 @@
   .reminder-switch {
     @apply relative inline-flex h-6 w-11 items-center rounded-full bg-surface-300 dark:bg-surface-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
+  
+  /* Permission Modal Styles */
+  .permissions-modal-backdrop {
+    @apply fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 animate-fade-in;
+  }
+  
+  .permissions-modal {
+    @apply bg-white dark:bg-surface-800 rounded-lg shadow-lg max-w-md w-full mx-4 transform transition-all duration-300 animate-scale-in;
+  }
+  
+  .permissions-modal-content {
+    @apply p-6;
+  }
+  
+  .permissions-modal-content h3 {
+    @apply text-lg font-semibold mb-4 text-surface-900 dark:text-surface-100;
+  }
+  
+  .permissions-modal-content p {
+    @apply text-surface-700 dark:text-surface-300 mb-4;
+  }
+  
+  .permissions-modal-buttons {
+    @apply flex justify-end gap-3 mt-6;
+  }
+  
+  .permissions-modal-closing {
+    animation: fadeOut 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
 }
 
 @layer utilities {

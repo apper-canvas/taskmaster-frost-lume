@@ -24,23 +24,81 @@ class ReminderService {
   }
 
   async requestPermission() {
-    if (!('Notification' in window)) {
-      toast.warning('Your browser does not support notifications');
+    try {
+      if (!('Notification' in window)) {
+        toast.warning('Your browser does not support notifications');
+        return false;
+      }
+      
+      if (Notification.permission === 'granted') {
+        this.notificationPermission = 'granted';
+        return true;
+      }
+      
+      // If permission is not determined yet, show an explanatory modal first
+      if (Notification.permission !== 'denied') {
+        // Create and show the permission modal
+        const showPermissionModal = () => {
+          return new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'permissions-modal-backdrop';
+            modal.innerHTML = `
+              <div class="permissions-modal">
+                <div class="permissions-modal-content">
+                  <h3>Enable Notifications</h3>
+                  <p>TaskMaster would like to send you notifications for your upcoming tasks.</p>
+                  <p>You'll be asked by your browser to allow notifications next.</p>
+                  <div class="permissions-modal-buttons">
+                    <button id="cancel-permission" class="btn-outline">Cancel</button>
+                    <button id="proceed-permission" class="btn-primary">Continue</button>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add event listeners for buttons
+            document.getElementById('cancel-permission').addEventListener('click', () => {
+              modal.classList.add('permissions-modal-closing');
+              setTimeout(() => {
+                document.body.removeChild(modal);
+                resolve(false);
+              }, 300);
+            });
+            
+            document.getElementById('proceed-permission').addEventListener('click', () => {
+              modal.classList.add('permissions-modal-closing');
+              setTimeout(() => {
+                document.body.removeChild(modal);
+                resolve(true);
+              }, 300);
+            });
+          });
+        };
+        
+        const shouldProceed = await showPermissionModal();
+        if (!shouldProceed) return false;
+        // Now request the permission using the browser's built-in dialog
+        const permission = await Notification.requestPermission();
+        this.notificationPermission = permission;
+        
+        if (permission === 'denied') {
+          toast.warning('Notification permission was denied. Please enable notifications in your browser settings to receive reminders.');
+        } else if (permission === 'granted') {
+          toast.success('Notifications enabled successfully!');
+        }
+        
+        return permission === 'granted';
+      } else {
+        toast.warning('Notification permission was denied. Please enable notifications in your browser settings to receive reminders.');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      toast.error('An error occurred while requesting notification permission');
       return false;
     }
-    
-    if (Notification.permission === 'granted') {
-      this.notificationPermission = 'granted';
-      return true;
-    }
-    
-    if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
-      this.notificationPermission = permission;
-      return permission === 'granted';
-    }
-    
-    toast.warning('Notification permission was denied. Please enable notifications in your browser settings to receive reminders.');
     return false;
   }
 
