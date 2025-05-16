@@ -98,9 +98,6 @@ const Home = () => {
     } else {
       setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
     }
-          : task
-      )
-    );
     
     const taskName = tasks.find(task => task.id === id).title;
     const isCompleted = !tasks.find(task => task.id === id).completed;
