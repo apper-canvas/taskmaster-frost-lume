@@ -287,13 +287,6 @@ const Home = () => {
       >
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div className="mb-4 md:mb-0">
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <ListIcon className="w-8 h-8 text-primary" />
-              Task Manager
-            </h1>
-            <p className="text-surface-600 dark:text-surface-400 mt-1">
-              Organize your tasks and boost productivity
-            </p>
           </div>
           
           <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
