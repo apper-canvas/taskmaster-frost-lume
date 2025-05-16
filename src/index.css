@@ -367,10 +367,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .permissions-modal-buttons {
     @apply flex justify-end gap-3 mt-6;
   }
-
+  
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
+}
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -532,3 +533,4 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .gradient-border:hover::before {
   @apply opacity-100;
+}
