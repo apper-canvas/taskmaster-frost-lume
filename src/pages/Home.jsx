@@ -94,7 +94,7 @@ const Home = () => {
   };
 
   // Toggle task completion
-  const toggleComplete = (id) => {
+  const toggleComplete = async (id) => {
     const taskToToggle = tasks.find(task => task.id === id);
     
     if (!taskToToggle) return;
@@ -110,14 +110,10 @@ const Home = () => {
         // First, update the current task to be completed in the database
         const taskToToggle = { ...taskToToggle, completed: true };
         await taskService.updateTask(taskToToggle);
-        
+      
         // Update local state
         const updatedTasks = tasks.map(task => 
           task.id === id ? { ...task, completed: true } : task
-        );
-      // First, update the current task to be completed
-      const updatedTasks = tasks.map(task => 
-        task.id === id ? { ...task, completed: true } : task
       );
 
       if (taskToToggle.dueDate) {
@@ -148,7 +144,6 @@ const Home = () => {
             break;
           default:
             break;
-          const createdTask = await taskService.createTask(newTask);
         }
         
         // Create a new task instance with the next due date
@@ -159,30 +154,30 @@ const Home = () => {
           dueDate: nextDueDate.toISOString().split('T')[0],
           createdAt: new Date().toISOString()
         };
-        
-        // Add the new task to the list
-        setTasks([...updatedTasks, newTask]);
 
-      try {
-        // Update the task in the database
-        await taskService.updateTask(updatedTask);
-      } catch (err) {
-        toast.error('Failed to update task completion status');
-        return;
-      }
+        try {
+          // Create the new repeating task instance
+          const createdTask = await taskService.createTask(newTask);
+          
+          // Add the new task to the list
+          setTasks([...updatedTasks, createdTask]);
+        } catch (err) {
+          toast.error('Failed to create next recurring task');
+        }
       } else {
         setTasks(updatedTasks);
       }
+      } catch (err) {
+        toast.error('Failed to update task completion status');
+      }
     } else { // For non-repeating tasks or tasks being marked incomplete
-      // For non-repeating tasks or tasks being marked incomplete
-      const updatedTask = { 
-        ...taskToToggle, 
-        completed: !taskToToggle.completed 
-      };
-      
-      // Update reminder if the task has one
-      if (updatedTask.reminder?.enabled) {
-        if (updatedTask.completed) {
+      try {
+        // For non-repeating tasks or tasks being marked incomplete
+        const updatedTask = { ...taskToToggle, completed: !taskToToggle.completed };
+        
+        // Update reminder if the task has one
+        if (updatedTask.reminder?.enabled) {
+          if (updatedTask.completed) {
           reminderService.cancelReminder(id);
         } else {
           reminderService.setReminder(updatedTask);
@@ -197,9 +192,20 @@ const Home = () => {
         `Task "${taskName}" marked as ${isCompleted ? 'completed' : 'incomplete'}`
       );
     }
+
+      // Update the task in the database
+      await taskService.updateTask(updatedTask);
+      
+      // Update local state
+      setTasks(tasks.map(task => task.id === id ? updatedTask : task));
+      } catch (err) {
+        toast.error('Failed to update task completion status');
+      }
+    }
     
-    const taskName = taskToToggle.title;
-    const isCompleted = !taskToToggle.completed; // This is the new state (opposite of current)
+  };
+
+  // Delete a task
   const deleteTask = async (id) => {
     try {
       const taskToDelete = tasks.find(task => task.id === id);
@@ -216,13 +222,6 @@ const Home = () => {
     } catch (error) {
       toast.error('Failed to delete task');
     }
-    );
-  };
-  
-  // Delete a task
-    if (filter === 'all' || !filter) return true;
-    const taskName = tasks.find(task => task.id === id).title;
-    setTasks(tasks.filter(task => task.id !== id));
   };
   
   // Filter tasks
@@ -657,293 +656,6 @@ const Home = () => {
           </div>
         </motion.div>
       )}
-    </div>
-  )
-};
-
-export default Home;
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-          <div className="mb-4 md:mb-0">
-            <h1 className="text-2xl font-bold">Welcome, {user?.firstName || 'User'}</h1>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
-            <div className="relative flex-1 sm:flex-none min-w-40">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FilterIcon className="w-4 h-4 text-surface-500" />
-              </div>
-              <select
-                className="pl-10 pr-4 py-2 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-primary"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="all">All Tasks</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="high">High Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="low">Low Priority</option>
-                <option value="recurring">Recurring Tasks</option>
-                {getCategories().map(category => (
-                  <option key={category} value={`category:${category}`}>
-                    Category: {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="flex flex-wrap gap-3">
-              <div className="relative flex-1 sm:flex-none min-w-40">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <SortIcon className="w-4 h-4 text-surface-500" />
-                </div>
-                <select
-                  className="pl-10 pr-4 py-2 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-lg text-sm focus:ring-2 focus:ring-primary"
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="dueDate">Due Date</option>
-                  <option value="priority">Priority</option>
-                  <option value="alphabetical">Alphabetical</option>
-                </select>
-              </div>
-              
-              <button
-                onClick={notifyTomorrowsTasks}
-                className="flex items-center justify-center space-x-1 px-4 py-2 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light rounded-lg text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
-                title="Get notifications for tasks due tomorrow"
-              >
-                <BellIcon className="w-4 h-4" />
-                <span>Tomorrow's Tasks</span>
-                {tomorrowsTasks.length > 0 && (
-                  <span className="ml-1 flex items-center justify-center bg-primary text-white text-xs rounded-full h-5 w-5">
-                    {tomorrowsTasks.length}
-                  </span>
-                )}
-              </button>
-              
-              <button
-                onClick={clearCompleted}
-                className="flex items-center justify-center space-x-1 px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-              >
-                <TrashIcon className="w-4 h-4" />
-                <span>Clear Completed</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-      
-      <MainFeature 
-        tasks={sortedTasks}
-        addTask={addTask}
-        toggleComplete={toggleComplete}
-        deleteTask={deleteTask}
-      />
-      
-      <motion.div 
-        className="mt-10 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Task Analytics & Insights
-          </h2>
-          <button 
-            onClick={showUpcomingTasksByCategory}
-            className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-white dark:bg-surface-800 shadow-sm hover:shadow-md transition-all duration-300"
-          >
-            <ActivityIcon className="w-4 h-4 text-primary" />
-            <span>Refresh Stats</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <motion.div 
-            className="stat-card stat-card-primary"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-white/80 font-medium mb-1">Total Tasks</p>
-                <p className="stat-number text-3xl font-bold" style={{ '--index': 0 }}>
-                  {tasks.length}
-                </p>
-              </div>
-              <div className="p-2 rounded-lg bg-white/20">
-                <ListIcon className="w-5 h-5 text-white" />
-              </div>
-            </div>
-            <p className="text-white/60 text-sm mt-4">
-              {tasks.length > 0 ? 'Managing your productivity' : 'Start adding tasks'}
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            className="stat-card stat-card-success"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            {(() => {
-              const completed = tasks.filter(task => task.completed).length;
-              const completionPercentage = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
-              
-              return (
-                <>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-white/80 font-medium mb-1">Completed</p>
-                      <p className="stat-number text-3xl font-bold" style={{ '--index': 1 }}>
-                        {completed}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/20">
-                      <CheckIcon className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-4">
-                    <div className="circular-progress" style={{ '--progress': `${completionPercentage}%`, '--progress-color': 'white' }}>
-                      <span className="text-xs font-bold">{completionPercentage}%</span>
-                    </div>
-                    <p className="text-white/60 text-sm">
-                      {completionPercentage > 75 ? 'Great progress!' : 'Keep going!'}
-                    </p>
-                  </div>
-                </>
-              );
-            })()}
-          </motion.div>
-          
-          <motion.div 
-            className="stat-card stat-card-warning"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            {(() => {
-              const pending = tasks.filter(task => !task.completed).length;
-              const highPriority = tasks.filter(task => task.priority === 'high' && !task.completed).length;
-              const highPriorityPercentage = pending ? Math.round((highPriority / pending) * 100) : 0;
-              
-              return (
-                <>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-white/80 font-medium mb-1">Pending</p>
-                      <p className="stat-number text-3xl font-bold" style={{ '--index': 2 }}>
-                        {pending}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/20">
-                      <ClockIcon className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-4">
-                    <div className="circular-progress" style={{ '--progress': `${highPriorityPercentage}%`, '--progress-color': 'white' }}>
-                      <span className="text-xs font-bold">{highPriorityPercentage}%</span>
-                    </div>
-                    <p className="text-white/60 text-sm">
-                      {highPriorityPercentage > 50 ? 'High priority tasks!' : 'Task priorities balanced'}
-                    </p>
-                  </div>
-                </>
-              );
-            })()}
-          </motion.div>
-          
-          <motion.div 
-            className="stat-card stat-card-accent"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            {(() => {
-              const recurring = tasks.filter(task => task.isRepeating).length;
-              const recurringPercentage = tasks.length ? Math.round((recurring / tasks.length) * 100) : 0;
-              
-              return (
-                <>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-white/80 font-medium mb-1">Recurring</p>
-                      <p className="stat-number text-3xl font-bold" style={{ '--index': 3 }}>
-                        {recurring}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/20">
-                      <RepeatIcon className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-4">
-                    <div className="circular-progress" style={{ '--progress': `${recurringPercentage}%`, '--progress-color': 'white' }}>
-                      <span className="text-xs font-bold">{recurringPercentage}%</span>
-                    </div>
-                    <p className="text-white/60 text-sm">
-                      {recurringPercentage > 30 ? 'Good habit building!' : 'Consider adding routines'}
-                    </p>
-                  </div>
-                </>
-              );
-            })()}
-          </motion.div>
-          
-          {/* Categories Section */}
-          {getCategories().length > 0 && (
-            <div className="col-span-full mt-2">
-              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <CategoryIcon className="w-5 h-5 text-primary" />
-                Categories
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {getCategories().map(category => {
-                  const categoryTasks = tasks.filter(t => t.category === category);
-                  const categoryColor = categoryTasks[0]?.categoryColor || 'blue';
-                  const completedCount = categoryTasks.filter(t => t.completed).length;
-                  const totalCount = categoryTasks.length;
-                  const completionPercentage = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
-                  const highPriorityCount = categoryTasks.filter(t => t.priority === 'high').length;
-                  
-                  return (
-                    <motion.div 
-                      key={category} 
-                      className={`rounded-xl p-4 bg-white dark:bg-surface-800 shadow-sm hover:shadow-md transition-all duration-300 border border-${categoryColor}-200 dark:border-${categoryColor}-900/30`}
-                      whileHover={{ y: -5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className={`w-3 h-3 rounded-full bg-${categoryColor}-500`}></div>
-                        <h4 className="font-medium text-surface-800 dark:text-surface-100">{category}</h4>
-                      </div>
-                      
-                      <div className="mt-2 space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-surface-600 dark:text-surface-400">Tasks</span>
-                          <span className="font-medium">{totalCount}</span>
-                        </div>
-                        <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-1.5">
-                          <div 
-                            className={`bg-${categoryColor}-500 h-1.5 rounded-full`} 
-                            style={{ width: `${completionPercentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
     </div>
   )
 };
