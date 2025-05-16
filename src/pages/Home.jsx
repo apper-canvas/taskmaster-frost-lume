@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import MainFeature from '../components/MainFeature';
 import getIcon from '../utils/iconUtils';
@@ -22,19 +22,82 @@ const Home = () => {
   const FilterIcon = getIcon('Filter');
   const SortIcon = getIcon('ArrowUpDown');
   const TrashIcon = getIcon('Trash2');
+  const RepeatIcon = getIcon('Repeat');
   
   // Add a new task
   const addTask = (task) => {
-    setTasks([...tasks, task]);
+    // For task updates, we want to replace the existing task
+    if (task.length && Array.isArray(task)) {
+      setTasks(task);
+      return;
+    }
+    
+    // For a new task, add it to the array
+    setTasks(prevTasks => [...prevTasks, task]);
     toast.success('Task added successfully!');
   };
   
   // Toggle task completion
   const toggleComplete = (id) => {
-    setTasks(
-      tasks.map(task => 
-        task.id === id 
-          ? { ...task, completed: !task.completed } 
+    const taskToToggle = tasks.find(task => task.id === id);
+    
+    if (!taskToToggle) return;
+    
+    // Check if this is a repeating task
+    if (taskToToggle.isRepeating && !taskToToggle.completed) {
+      // For repeating tasks that are being marked complete, we need to:
+      // 1. Mark the current instance as complete
+      // 2. Create the next instance with an updated due date
+      
+      // First, update the current task to be completed
+      const updatedTasks = tasks.map(task => 
+        task.id === id ? { ...task, completed: true } : task
+      );
+      
+      // Then, calculate the next due date if a due date exists
+      if (taskToToggle.dueDate) {
+        const currentDueDate = new Date(taskToToggle.dueDate);
+        let nextDueDate = new Date(currentDueDate);
+        
+        // Calculate the next due date based on repeat type
+        switch (taskToToggle.repeatType) {
+          case 'daily':
+            nextDueDate.setDate(currentDueDate.getDate() + 1);
+            break;
+          case 'weekly':
+            nextDueDate.setDate(currentDueDate.getDate() + 7);
+            break;
+          case 'monthly':
+            nextDueDate.setMonth(currentDueDate.getMonth() + 1);
+            break;
+          case 'custom':
+            if (taskToToggle.customUnit === 'days') {
+              nextDueDate.setDate(currentDueDate.getDate() + taskToToggle.customInterval);
+            } else if (taskToToggle.customUnit === 'weeks') {
+              nextDueDate.setDate(currentDueDate.getDate() + (taskToToggle.customInterval * 7));
+            } else if (taskToToggle.customUnit === 'months') {
+              nextDueDate.setMonth(currentDueDate.getMonth() + taskToToggle.customInterval);
+            } else if (taskToToggle.customUnit === 'years') {
+              nextDueDate.setFullYear(currentDueDate.getFullYear() + taskToToggle.customInterval);
+            }
+            break;
+        }
+        
+        // Create a new task instance with the next due date
+        const newTask = {
+          ...taskToToggle,
+          id: Date.now().toString(), // Generate a new ID
+          completed: false,
+          dueDate: nextDueDate.toISOString().split('T')[0],
+          createdAt: new Date().toISOString()
+        };
+        
+        // Add the new task to the list
+        setTasks([...updatedTasks, newTask]);
+      }
+    } else {
+      setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
+    }
           : task
       )
     );
@@ -64,6 +127,7 @@ const Home = () => {
     if (filter === 'high') return task.priority === 'high';
     if (filter === 'medium') return task.priority === 'medium';
     if (filter === 'low') return task.priority === 'low';
+    if (filter === 'recurring') return task.isRepeating;
     return true;
   });
   
@@ -130,6 +194,7 @@ const Home = () => {
                 <option value="high">High Priority</option>
                 <option value="medium">Medium Priority</option>
                 <option value="low">Low Priority</option>
+                                <option value="recurring">Recurring Tasks</option>
               </select>
             </div>
             
@@ -181,6 +246,12 @@ const Home = () => {
               {tasks.filter(task => task.completed).length}
             </p>
           </div>
+                          <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+                            <p className="text-surface-500 dark:text-surface-400 text-sm">Recurring</p>
+                            <p className="text-2xl font-bold text-primary dark:text-primary-light">
+                              {tasks.filter(task => task.isRepeating).length}
+                            </p>
+                          </div>
           <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-lg p-4">
             <p className="text-surface-500 dark:text-surface-400 text-sm">Pending</p>
             <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">

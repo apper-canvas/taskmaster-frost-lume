@@ -14,9 +14,12 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const CalendarIcon = getIcon('Calendar');
   const ClockIcon = getIcon('Clock');
   const AlertCircleIcon = getIcon('AlertCircle');
+  const RepeatIcon = getIcon('Repeat');
   const InfoIcon = getIcon('Info');
   const MessageCircleIcon = getIcon('MessageCircle');
   const TagIcon = getIcon('Tag');
+  const ChevronDownIcon = getIcon('ChevronDown');
+  const ChevronUpIcon = getIcon('ChevronUp');
   
   // Form state
   const [title, setTitle] = useState('');
@@ -24,8 +27,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const [priority, setPriority] = useState('medium');
   const [dueDate, setDueDate] = useState('');
   const [formError, setFormError] = useState('');
+  const [isRepeating, setIsRepeating] = useState(false);
+  const [repeatType, setRepeatType] = useState('daily');
+  const [customInterval, setCustomInterval] = useState(1);
+  const [customUnit, setCustomUnit] = useState('days');
   const [expanded, setExpanded] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [showRepeatOptions, setShowRepeatOptions] = useState(false);
   const [showTaskDetails, setShowTaskDetails] = useState(null);
   
   // Form submission
@@ -51,6 +59,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
               dueDate: dueDate || null,
               updatedAt: new Date().toISOString()
             } 
+            : task
+      );
+      
+      // Update the recurring properties if the task is repeating
+      updatedTasks = updatedTasks.map(task => 
+        task.id === editingTaskId 
+          ? { ...task, isRepeating, repeatType, customInterval, customUnit }
           : task
       );
       
@@ -69,6 +84,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
         dueDate: dueDate || null,
         completed: false,
         createdAt: new Date().toISOString(),
+        // Add recurrence data if the task is repeating
+        isRepeating,
+        repeatType,
+        customInterval,
+        customUnit,
+        // Track original due date for recurring calculations
+        originalDueDate: dueDate || null,
       };
       
       addTask(newTask);
@@ -79,7 +101,12 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setDescription('');
     setPriority('medium');
     setDueDate('');
+    setIsRepeating(false);
+    setRepeatType('daily');
+    setCustomInterval(1);
+    setCustomUnit('days');
     setFormError('');
+    setShowRepeatOptions(false);
     setExpanded(false);
   };
   
@@ -88,9 +115,14 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setTitle(task.title);
     setDescription(task.description || '');
     setPriority(task.priority);
+    setIsRepeating(task.isRepeating || false);
+    setRepeatType(task.repeatType || 'daily');
+    setCustomInterval(task.customInterval || 1);
+    setCustomUnit(task.customUnit || 'days');
     setDueDate(task.dueDate || '');
     setEditingTaskId(task.id);
     setExpanded(true);
+    setShowRepeatOptions(task.isRepeating || false);
     setShowTaskDetails(null);
   };
   
@@ -100,7 +132,12 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setDescription('');
     setPriority('medium');
     setDueDate('');
+    setIsRepeating(false);
+    setRepeatType('daily');
+    setCustomInterval(1);
+    setCustomUnit('days');
     setEditingTaskId(null);
+    setShowRepeatOptions(false);
     setExpanded(false);
     setFormError('');
   };
@@ -127,6 +164,34 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
         return 'bg-surface-100 text-surface-800 dark:bg-surface-700 dark:text-surface-200';
     }
   };
+
+  // Helper to get the human-readable repeat text
+  const getRepeatText = (task) => {
+    if (!task.isRepeating) return null;
+    
+    switch (task.repeatType) {
+      case 'daily':
+        return 'Repeats daily';
+      case 'weekly':
+        return 'Repeats weekly';
+      case 'monthly':
+        return 'Repeats monthly';
+      case 'custom':
+        const unit = task.customUnit === 'days' 
+          ? task.customInterval === 1 ? 'day' : 'days'
+          : task.customUnit === 'weeks' 
+            ? task.customInterval === 1 ? 'week' : 'weeks'
+            : task.customUnit === 'months'
+              ? task.customInterval === 1 ? 'month' : 'months'
+              : 'years';
+        
+        return `Repeats every ${task.customInterval} ${unit}`;
+      default:
+        return 'Repeats';
+    }
+  };
+
+  // Calculate next due date based on repeat settings
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -243,6 +308,114 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                       min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
+                  
+                  <div className="mb-4">
+                    <div className="flex items-center mb-2">
+                      <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
+                        <input
+                          type="checkbox"
+                          className="mr-2 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
+                          checked={isRepeating}
+                          onChange={(e) => {
+                            setIsRepeating(e.target.checked);
+                            if (e.target.checked) setShowRepeatOptions(true);
+                          }}
+                        />
+                        Repeating Task
+                      </label>
+                      
+                      {isRepeating && (
+                        <button
+                          type="button"
+                          onClick={() => setShowRepeatOptions(!showRepeatOptions)}
+                          className="ml-auto p-1 text-surface-500 hover:text-primary"
+                        >
+                          {showRepeatOptions ? (
+                            <ChevronUpIcon className="h-4 w-4" />
+                          ) : (
+                            <ChevronDownIcon className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    
+                    <AnimatePresence>
+                      {isRepeating && showRepeatOptions && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="pl-6 border-l-2 border-surface-200 dark:border-surface-700"
+                        >
+                          <div className="mb-2">
+                            <p className="text-xs text-surface-600 dark:text-surface-400 mb-2">
+                              Repeat frequency:
+                            </p>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setRepeatType('daily')}
+                                className={`text-xs py-1.5 px-3 rounded-lg ${
+                                  repeatType === 'daily'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300'
+                                }`}
+                              >
+                                Daily
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setRepeatType('weekly')}
+                                className={`text-xs py-1.5 px-3 rounded-lg ${
+                                  repeatType === 'weekly'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300'
+                                }`}
+                              >
+                                Weekly
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setRepeatType('monthly')}
+                                className={`text-xs py-1.5 px-3 rounded-lg ${
+                                  repeatType === 'monthly'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300'
+                                }`}
+                              >
+                                Monthly
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setRepeatType('custom')}
+                                className={`text-xs py-1.5 px-3 rounded-lg ${
+                                  repeatType === 'custom'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300'
+                                }`}
+                              >
+                                Custom
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {repeatType === 'custom' && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <input type="number" min="1" value={customInterval} onChange={(e) => setCustomInterval(parseInt(e.target.value, 10) || 1)} className="w-20 py-1 px-2 text-sm" />
+                              <select value={customUnit} onChange={(e) => setCustomUnit(e.target.value)} className="flex-1 py-1 text-sm">
+                                <option value="days">days</option>
+                                <option value="weeks">weeks</option>
+                                <option value="months">months</option>
+                                <option value="years">years</option>
+                              </select>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -355,6 +528,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                                   {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                                 </span>
                                 
+                                {task.isRepeating && (
+                                  <span className="text-xs flex items-center gap-1 px-2 py-1 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light rounded-full">
+                                    <RepeatIcon className="w-3 h-3" />
+                                    Recurring
+                                  </span>
+                                )}
+                                
                                 {task.dueDate && (
                                   <span className="text-xs flex items-center gap-1 px-2 py-1 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 rounded-full">
                                     <CalendarIcon className="w-3 h-3" />
@@ -376,6 +556,13 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                                   Has description
                                 </span>
                               )}
+                               
+                               {task.isRepeating && (
+                                 <span className="flex items-center gap-1">
+                                   <RepeatIcon className="w-3 h-3" />
+                                   {getRepeatText(task)}
+                                 </span>
+                               )}
                             </div>
                             
                             {/* Task Details */}
