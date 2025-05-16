@@ -564,8 +564,8 @@ const Home = () => {
             </div>
           )}
         </div>
+      </motion.div>
       </div>
-    </div>
     </div>
   )
 };
