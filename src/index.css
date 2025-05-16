@@ -1,5 +1,6 @@
 @tailwind base;
 @tailwind components;
+@tailwind utilities;
 
   /* Modern stat cards */
 /* Gradients for UI elements - moved outside any layer */
@@ -527,10 +528,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* Import React Toastify CSS */
 @import 'react-toastify/dist/ReactToastify.css';
 
-.gradient-border::before {
-  content: '';
-  @apply absolute inset-0 rounded-lg -z-10 bg-gradient-to-r from-primary-light via-primary to-secondary opacity-0 transition-opacity duration-300;
-}
-.gradient-border:hover::before {
-  @apply opacity-100;
+@layer utilities {
+  .gradient-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-lg -z-10 bg-gradient-to-r from-primary-light via-primary to-secondary opacity-0 transition-opacity duration-300;
+  }
+  .gradient-border:hover::before {
+    @apply opacity-100;
+  }
 }
