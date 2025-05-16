@@ -60,11 +60,6 @@ export const fetchTasks = async () => {
         'CreatedOn', 'ModifiedOn'
       ],
       where: [
-        {
-          fieldName: 'IsDeleted',
-          operator: 'ExactMatch',
-          values: [false]
-        }
       ],
       orderBy: [
         {
