@@ -1,0 +1,430 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'react-toastify';
+import getIcon from '../utils/iconUtils';
+
+const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
+  // Icon declarations
+  const PlusIcon = getIcon('Plus');
+  const CheckIcon = getIcon('Check');
+  const XIcon = getIcon('X');
+  const TrashIcon = getIcon('Trash2');
+  const EditIcon = getIcon('Edit2');
+  const CalendarIcon = getIcon('Calendar');
+  const ClockIcon = getIcon('Clock');
+  const AlertCircleIcon = getIcon('AlertCircle');
+  const InfoIcon = getIcon('Info');
+  const MessageCircleIcon = getIcon('MessageCircle');
+  const TagIcon = getIcon('Tag');
+  
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('medium');
+  const [dueDate, setDueDate] = useState('');
+  const [formError, setFormError] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [showTaskDetails, setShowTaskDetails] = useState(null);
+  
+  // Form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!title.trim()) {
+      setFormError('Task title is required');
+      toast.error('Task title is required');
+      return;
+    }
+    
+    if (editingTaskId) {
+      // Update existing task
+      const updatedTasks = tasks.map(task => 
+        task.id === editingTaskId 
+          ? { 
+              ...task, 
+              title, 
+              description, 
+              priority, 
+              dueDate: dueDate || null,
+              updatedAt: new Date().toISOString()
+            } 
+          : task
+      );
+      
+      addTask(updatedTasks);
+      toast.success('Task updated successfully!');
+      
+      // Reset editing state
+      setEditingTaskId(null);
+    } else {
+      // Create new task
+      const newTask = {
+        id: Date.now().toString(),
+        title,
+        description,
+        priority,
+        dueDate: dueDate || null,
+        completed: false,
+        createdAt: new Date().toISOString(),
+      };
+      
+      addTask(newTask);
+    }
+    
+    // Reset form
+    setTitle('');
+    setDescription('');
+    setPriority('medium');
+    setDueDate('');
+    setFormError('');
+    setExpanded(false);
+  };
+  
+  // Start editing a task
+  const startEditing = (task) => {
+    setTitle(task.title);
+    setDescription(task.description || '');
+    setPriority(task.priority);
+    setDueDate(task.dueDate || '');
+    setEditingTaskId(task.id);
+    setExpanded(true);
+    setShowTaskDetails(null);
+  };
+  
+  // Cancel editing
+  const cancelEditing = () => {
+    setTitle('');
+    setDescription('');
+    setPriority('medium');
+    setDueDate('');
+    setEditingTaskId(null);
+    setExpanded(false);
+    setFormError('');
+  };
+  
+  // Toggle task details view
+  const toggleTaskDetails = (taskId) => {
+    if (showTaskDetails === taskId) {
+      setShowTaskDetails(null);
+    } else {
+      setShowTaskDetails(taskId);
+    }
+  };
+  
+  // Helper for priority styling
+  const getPriorityStyles = (priority) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'low':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      default:
+        return 'bg-surface-100 text-surface-800 dark:bg-surface-700 dark:text-surface-200';
+    }
+  };
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Task Creation Form */}
+      <div className="md:col-span-1">
+        <div className="bg-white dark:bg-surface-800 rounded-xl shadow-card p-5">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            {editingTaskId ? (
+              <>
+                <EditIcon className="w-5 h-5 mr-2 text-primary" />
+                Edit Task
+              </>
+            ) : (
+              <>
+                <PlusIcon className="w-5 h-5 mr-2 text-primary" />
+                Add New Task
+              </>
+            )}
+          </h2>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="title" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                Task Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={`w-full px-4 py-2 rounded-lg ${
+                  formError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : ''
+                }`}
+                placeholder="What needs to be done?"
+              />
+              {formError && (
+                <p className="mt-1 text-sm text-red-500">{formError}</p>
+              )}
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="priority" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                Priority Level
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPriority('low')}
+                  className={`flex items-center justify-center py-2 rounded-lg ${
+                    priority === 'low'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-2 border-green-500'
+                      : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300 border border-surface-200 dark:border-surface-600'
+                  }`}
+                >
+                  Low
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriority('medium')}
+                  className={`flex items-center justify-center py-2 rounded-lg ${
+                    priority === 'medium'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-2 border-yellow-500'
+                      : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300 border border-surface-200 dark:border-surface-600'
+                  }`}
+                >
+                  Medium
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriority('high')}
+                  className={`flex items-center justify-center py-2 rounded-lg ${
+                    priority === 'high'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-2 border-red-500'
+                      : 'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-300 border border-surface-200 dark:border-surface-600'
+                  }`}
+                >
+                  High
+                </button>
+              </div>
+            </div>
+            
+            <AnimatePresence>
+              {(expanded || editingTaskId) && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="mb-4">
+                    <label htmlFor="description" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg resize-none"
+                      placeholder="Add details about this task..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label htmlFor="dueDate" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Due Date
+                    </label>
+                    <input
+                      type="date"
+                      id="dueDate"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg"
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <div className="flex flex-col sm:flex-row gap-2 mt-6">
+              {!expanded && !editingTaskId ? (
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center space-x-1 px-4 py-2 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
+                  onClick={() => setExpanded(true)}
+                >
+                  <InfoIcon className="w-4 h-4" />
+                  <span>Add Details</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="w-full sm:w-auto flex items-center justify-center space-x-1 px-4 py-2 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
+                  onClick={cancelEditing}
+                >
+                  <XIcon className="w-4 h-4" />
+                  <span>Cancel</span>
+                </button>
+              )}
+              
+              <button
+                type="submit"
+                className="w-full sm:w-auto flex-1 flex items-center justify-center space-x-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                {editingTaskId ? (
+                  <>
+                    <CheckIcon className="w-4 h-4" />
+                    <span>Update Task</span>
+                  </>
+                ) : (
+                  <>
+                    <PlusIcon className="w-4 h-4" />
+                    <span>Add Task</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      {/* Task List */}
+      <div className="md:col-span-2">
+        <div className="bg-white dark:bg-surface-800 rounded-xl shadow-card overflow-hidden">
+          <div className="p-5 border-b border-surface-200 dark:border-surface-700">
+            <h2 className="text-xl font-semibold">
+              Your Tasks ({tasks.length})
+            </h2>
+          </div>
+          
+          <div className="divide-y divide-surface-200 dark:divide-surface-700">
+            {tasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                <div className="w-16 h-16 mb-4 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
+                  <AlertCircleIcon className="w-8 h-8 text-surface-400" />
+                </div>
+                <h3 className="text-lg font-medium mb-1">No Tasks Found</h3>
+                <p className="text-surface-500 dark:text-surface-400 max-w-xs">
+                  You don't have any tasks yet. Create your first task to get started!
+                </p>
+              </div>
+            ) : (
+              <div className="max-h-[60vh] overflow-y-auto scrollbar-hide">
+                <AnimatePresence initial={false}>
+                  {tasks.map((task) => (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="group"
+                    >
+                      <div className="p-4 hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <button
+                            onClick={() => toggleComplete(task.id)}
+                            className={`mt-1 flex-shrink-0 w-5 h-5 rounded-full border ${
+                              task.completed
+                                ? 'bg-primary border-primary'
+                                : 'border-surface-300 dark:border-surface-600'
+                            } flex items-center justify-center transition-colors`}
+                            aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                          >
+                            {task.completed && (
+                              <CheckIcon className="w-3 h-3 text-white" />
+                            )}
+                          </button>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div 
+                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1 cursor-pointer"
+                              onClick={() => toggleTaskDetails(task.id)}
+                            >
+                              <h3 className={`font-medium ${
+                                task.completed
+                                  ? 'line-through text-surface-400'
+                                  : 'text-surface-900 dark:text-surface-100'
+                              }`}>
+                                {task.title}
+                              </h3>
+                              
+                              <div className="flex items-center flex-wrap gap-2">
+                                <span className={`text-xs px-2 py-1 rounded-full ${getPriorityStyles(task.priority)}`}>
+                                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                </span>
+                                
+                                {task.dueDate && (
+                                  <span className="text-xs flex items-center gap-1 px-2 py-1 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 rounded-full">
+                                    <CalendarIcon className="w-3 h-3" />
+                                    {new Date(task.dueDate).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center text-xs text-surface-500 dark:text-surface-400 gap-2">
+                              <span className="flex items-center gap-1">
+                                <ClockIcon className="w-3 h-3" />
+                                {formatDistanceToNow(new Date(task.createdAt), { addSuffix: true })}
+                              </span>
+                              
+                              {task.description && (
+                                <span className="flex items-center gap-1">
+                                  <MessageCircleIcon className="w-3 h-3" />
+                                  Has description
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Task Details */}
+                            <AnimatePresence>
+                              {showTaskDetails === task.id && task.description && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="mt-3 bg-surface-50 dark:bg-surface-700/50 p-3 rounded-lg"
+                                >
+                                  <p className="text-sm text-surface-700 dark:text-surface-300">
+                                    {task.description}
+                                  </p>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                          
+                          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => startEditing(task)}
+                              className="p-2 text-surface-500 hover:text-primary dark:text-surface-400 dark:hover:text-primary-light rounded-full hover:bg-surface-200 dark:hover:bg-surface-700"
+                              aria-label="Edit task"
+                            >
+                              <EditIcon className="w-4 h-4" />
+                            </button>
+                            
+                            <button
+                              onClick={() => deleteTask(task.id)}
+                              className="p-2 text-surface-500 hover:text-red-500 dark:text-surface-400 dark:hover:text-red-400 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700"
+                              aria-label="Delete task"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MainFeature;
