@@ -367,19 +367,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .permissions-modal-buttons {
     @apply flex justify-end gap-3 mt-6;
   }
-  
-      opacity: 1;
-    }
-  }
-  
-  
+
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
-}
-  
 @layer utilities {
-  
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -472,9 +464,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     transition: max-height 300ms ease-out, opacity 300ms ease-out, transform 300ms ease-out;
     overflow: hidden;
     background-clip: padding-box;
-    @apply relative;
-    background-clip: padding-box;
-  }
+    @apply relative;  }
 
   /* Task card with gradient hover effect */
   .task-card-gradient {
