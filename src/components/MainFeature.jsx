@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-toastify';
 import getIcon from '../utils/iconUtils';
+import * as taskService from '../services/taskService';
 import reminderService from '../utils/reminderService';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-
+// Main feature component with task form and task list
 const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   // Icon declarations
   const PlusIcon = getIcon('Plus');
@@ -52,13 +53,22 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const [groupBy, setGroupBy] = useState('none'); // 'none', 'category', 'priority', 'dueDate'
   const [showTaskDetails, setShowTaskDetails] = useState(null);
   
+  // Form loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   // Form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
     if (!title.trim()) {
       setFormError('Task title is required');
+      toast.error('Task title is required');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
       return;
     }
     
@@ -82,6 +92,12 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
       // Update reminder if enabled
       if (reminderEnabled && dueDate) {
         const taskToUpdate = updatedTasks.find(t => t.id === editingTaskId);
+        
+        try {
+          await taskService.updateTask(taskToUpdate);
+        } catch (error) {
+          toast.error('Failed to update task in database');
+        }
         taskToUpdate.reminder = {
           enabled: true,
           minutesBefore: reminderMinutesBefore
@@ -95,7 +111,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     } else {
       // Create new task
       const newTask = {
-        id: Date.now().toString(),
+        id: Date.now().toString(), // This will be replaced by the database ID after creation
         title,
         description,
         priority,
@@ -123,7 +139,25 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
       // Set reminder if enabled
       if (reminderEnabled && dueDate) reminderService.setReminder(newTask);
       
-      addTask(newTask);
+      try {
+        // The addTask function should now handle the database creation
+        await addTask(newTask);
+        toast.success('Task created successfully!');
+      } catch (error) {
+        console.error('Error creating task:', error);
+        toast.error('Failed to create task');
+      }
+    }
+    } catch (error) {
+      console.error('Error submitting task:', error);
+      toast.error('Failed to save task');
+    } finally {
+      setIsSubmitting(false);
+      
+      // Only reset the form if we succeeded or if we're not editing
+      // This way, the user can retry submitting the edit if it fails
+      if (!editingTaskId || !isSubmitting) {
+        resetForm();
     }
     
     // Reset form
@@ -143,6 +177,10 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setCustomCategory('');
     setCategoryColor('blue');
     setExpanded(false);
+    }
+  };
+  
+  const resetForm = () => {
   };
   
   // Start editing a task
@@ -394,6 +432,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const renderTaskForm = () => (
     <div className="md:col-span-1 h-fit sticky top-4">
       <div className="md:col-span-1">
+        {isSubmitting && <div className="absolute inset-0 bg-white/50 dark:bg-surface-900/50 flex items-center justify-center z-10"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
         <div className="bg-white dark:bg-surface-800 rounded-xl shadow-card p-5">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             {editingTaskId ? (
@@ -835,12 +874,18 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
               
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full sm:w-auto flex-1 flex items-center justify-center space-x-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
               >
                 {editingTaskId ? (
                   <>
                     <CheckIcon className="w-4 h-4" />
                     <span>Update Task</span>
+                  </>
+                ) : isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <span>{editingTaskId ? 'Updating...' : 'Adding...'}</span>
                   </>
                 ) : (
                   <>
@@ -1090,6 +1135,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
             <div className="w-16 h-16 mb-4 rounded-full bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
               <AlertCircleIcon className="w-8 h-8 text-surface-400" />
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
             <h3 className="text-lg font-medium mb-1">No Tasks Found</h3>
             <p className="text-surface-500 dark:text-surface-400 max-w-xs">

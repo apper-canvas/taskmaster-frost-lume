@@ -1,4 +1,5 @@
 import { toast } from 'react-toastify';
+import * as taskService from '../services/taskService';
 
 class ReminderService {
   constructor() {
@@ -102,11 +103,28 @@ class ReminderService {
     return false;
   }
 
-  loadReminders() {
+  async loadReminders() {
     try {
-      const storedReminders = localStorage.getItem('taskReminders');
+      // Try to get reminders from localStorage first for offline capability
+      let storedReminders = localStorage.getItem('taskReminders');
+      let remindersLoaded = false;
+      
       if (storedReminders) {
         this.reminders = JSON.parse(storedReminders);
+        remindersLoaded = true;
+      }
+      
+      // If authentication is available, also try to load tasks with reminders from the server
+      try {
+        const tasks = await taskService.fetchTasks();
+        const tasksWithReminders = tasks.filter(task => 
+          task.reminder && task.dueDate && !task.completed
+        );
+        
+        // Set reminders for each eligible task
+        tasksWithReminders.forEach(task => this.setReminder(task));
+      } catch (error) {
+        console.error('Failed to load tasks with reminders from server', error);
       }
     } catch (error) {
       console.error('Error loading reminders from localStorage:', error);
