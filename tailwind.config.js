@@ -33,8 +33,11 @@ export default {
       },
       
       fontFamily: {
-        sans: ['Georgia', 'Inter', 'ui-sans-serif', 'system-ui'],
-        heading: ['Georgia', 'Inter', 'ui-sans-serif', 'system-ui']
+        sans: ['Inter', 'Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['Roboto', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      fontWeight: {
+        normal: 400, medium: 500, semibold: 600, bold: 700
       },
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',

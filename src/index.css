@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
   /* Modern stat cards */
 /* Gradients for UI elements - moved outside any layer */
@@ -110,7 +112,7 @@
   }
   
   body {
-    @apply font-sans antialiased text-surface-800 dark:text-surface-100 bg-gradient-to-br from-surface-50 to-surface-100 dark:from-surface-900 dark:to-surface-800 min-h-screen;
+    @apply font-sans antialiased text-surface-800 dark:text-surface-100 bg-gradient-to-br from-surface-50 to-surface-100 dark:from-surface-900 dark:to-surface-800 min-h-screen transition-colors duration-300;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -142,14 +144,18 @@
   }
   
   button.btn-primary {
-    @apply bg-gradient-primary from-primary-start to-primary-end text-white hover:bg-gradient-primary hover:from-primary hover:to-primary-dark hover:shadow-md focus:ring-primary transform hover:-translate-y-0.5 transition-all;
+    @apply bg-gradient-stat-primary from-primary-light via-primary to-primary-dark text-white hover:shadow-md focus:ring-primary transform hover:-translate-y-0.5 transition-all;
   }
 
   button.btn-primary:active {
     @apply transform translate-y-0.5;
   }
   
-  button.btn-secondary {
+  button.btn-success {
+    @apply bg-gradient-stat-primary from-stat-green-start to-stat-green-end text-white hover:shadow-md focus:ring-green-500;
+  }
+  
+  button.btn-secondary { 
     @apply bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary;
   }
   
@@ -160,7 +166,7 @@
   /* Card gradients */
   .card-gradient {
     @apply bg-gradient-card from-card-start to-card-end dark:from-surface-800 dark:to-card-dark-end;
-  }
+  } 
 
   .card-gradient-hover:hover {
     @apply bg-gradient-card from-white to-surface-100 dark:from-surface-700 dark:to-surface-800 shadow-md transition-all duration-300;
@@ -168,8 +174,9 @@
 }
 
 @layer components {
+  /* All badges and interactive elements with consistent styling */
   .repeat-badge {
-    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light;
+    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-primary-light/20 to-primary/20 text-primary dark:from-primary-light/30 dark:to-primary/30 dark:text-primary-light transition-all duration-300 hover:from-primary-light/30 hover:to-primary/30;
   }
   
   .interval-input {
@@ -177,7 +184,7 @@
   }
   
   .reminder-badge {
-    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary dark:bg-secondary/20 dark:text-secondary-light;
+    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-secondary-light/20 to-secondary/20 text-secondary dark:from-secondary-light/30 dark:to-secondary/30 dark:text-secondary-light transition-all duration-300 hover:from-secondary-light/30 hover:to-secondary/30;
   }
 
   /* Calendar styling for date input */
@@ -343,7 +350,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   
   .modal-backdrop {
-    @apply fixed inset-0 bg-gradient-to-br from-black/40 to-black/60 dark:from-black/60 dark:to-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in;
+    @apply fixed inset-0 bg-gradient-to-br from-black/40 to-black/60 dark:from-black/70 dark:to-black/90 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in;
   }
   .permissions-modal-backdrop {
     @apply fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 animate-fade-in;
@@ -372,6 +379,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
+  
+  /* Common card styling based on stat cards */
+  .app-card {
+    @apply relative overflow-hidden rounded-xl shadow-md p-5 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 bg-white dark:bg-surface-800;
+  }
+  
+  .app-card-gradient {
+    @apply relative overflow-hidden rounded-xl shadow-md p-5 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 bg-gradient-stat-primary from-primary-light via-primary to-primary-dark text-white;
+  }
+  
 }
 @layer utilities {
   .scrollbar-hide {
@@ -470,7 +487,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
   /* Task card with gradient hover effect */
   .task-card-gradient {
-    @apply bg-white dark:bg-surface-800 hover:bg-gradient-to-br hover:from-white hover:to-surface-50 dark:hover:from-surface-800 dark:hover:to-surface-700 transition-all duration-300;
+    @apply relative overflow-hidden bg-white dark:bg-surface-800 hover:bg-gradient-to-br hover:from-white hover:to-surface-50 dark:hover:from-surface-800 dark:hover:to-surface-700 transition-all duration-300 hover:shadow-sm;
   }
   
   /* Circular progress */
@@ -521,8 +538,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .content-spacing {
     @apply px-5 py-6 md:px-6 md:py-8;
   }
-  
-  /* Fixed properties for task-details-enter-active that were split */
+
+  /* Additional gradient utilities based on stat cards */
+  .bg-gradient-app {
+    @apply bg-gradient-stat-primary from-primary-light via-primary to-primary-dark;
+  }
+
+  .bg-gradient-app-secondary {
+    @apply bg-gradient-primary from-secondary-light to-secondary-dark;
+  }
+
+  .bg-gradient-app-success {
+    @apply bg-gradient-primary from-stat-green-start to-stat-green-end;
+  }
 }
 
 /* Import React Toastify CSS */

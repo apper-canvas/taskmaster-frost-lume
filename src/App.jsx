@@ -37,10 +37,10 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200">
-      <header className="bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 shadow-sm py-4">
+      <header className="bg-gradient-to-r from-white to-surface-50 dark:from-surface-800 dark:to-surface-900 border-b border-surface-200 dark:border-surface-700 shadow-md py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <ChecklistIcon className="text-primary h-6 w-6" />
+            <div className="bg-gradient-app p-1.5 rounded-lg shadow-sm"><ChecklistIcon className="text-white h-5 w-5" /></div>
             <h1 className="text-xl md:text-2xl font-bold text-surface-900 dark:text-surface-50">
               TaskMaster
             </h1>
@@ -48,7 +48,7 @@ const App = () => {
           <button 
             onClick={toggleDarkMode}
             className="p-2 rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors duration-200"
-            aria-label="Toggle dark mode"
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -59,9 +59,9 @@ const App = () => {
                 transition={{ duration: 0.3 }}
               >
                 {darkMode ? (
-                  <SunIcon className="h-5 w-5 text-yellow-300" />
+                  <SunIcon className="h-5 w-5 text-yellow-300 drop-shadow-md" />
                 ) : (
-                  <MoonIcon className="h-5 w-5 text-surface-600" />
+                  <MoonIcon className="h-5 w-5 text-indigo-400" />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -76,8 +76,8 @@ const App = () => {
         </Routes>
       </main>
 
-      <footer className="bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 mt-8">
-        <div className="container mx-auto px-4 text-center text-sm text-surface-500">
+      <footer className="bg-gradient-to-r from-white to-surface-50 dark:from-surface-800 dark:to-surface-900 border-t border-surface-200 dark:border-surface-700 py-4 mt-8 shadow-inner">
+        <div className="container mx-auto px-4 text-center text-sm font-medium text-surface-600 dark:text-surface-400">
           &copy; {new Date().getFullYear()} TaskMaster. All rights reserved.
         </div>
       </footer>
@@ -93,7 +93,7 @@ const App = () => {
         draggable
         pauseOnHover
         theme={darkMode ? "dark" : "light"}
-        toastClassName="bg-surface-50 dark:bg-surface-800 text-surface-900 dark:text-surface-50 shadow-md"
+        toastClassName="bg-gradient-to-r from-white to-surface-50 dark:from-surface-800 dark:to-surface-900 text-surface-900 dark:text-surface-50 shadow-md rounded-lg border border-surface-200 dark:border-surface-700"
       />
     </div>
   );
