@@ -6,6 +6,7 @@ import getIcon from '../utils/iconUtils';
 import reminderService from '../utils/reminderService';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
+
 const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   // Icon declarations
   const PlusIcon = getIcon('Plus');
@@ -25,6 +26,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
   const BellIcon = getIcon('Bell');
   const LayersIcon = getIcon('Layers');
   const MoveIcon = getIcon('Move');
+  const ListIcon = getIcon('List');
   
   // Form state
   const [title, setTitle] = useState('');
@@ -506,8 +508,9 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                   </div>
                   
                   {dueDate && (
-                  <div className="mb-4">
-                    <div className="flex items-center mb-2">
+                   <>
+                    <div className="mb-4">
+                      <div className="flex items-center mb-2">
                       <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
                         <input
                           type="checkbox"
@@ -610,9 +613,8 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                       )}
                     </AnimatePresence>
                   </div>
-                  
-                    <div className="mb-4">
-                      <div className="flex items-center mb-2">
+                  <div className="mb-4">
+                    <div className="flex items-center mb-2">
                         <label className="flex items-center text-sm font-medium text-surface-700 dark:text-surface-300">
                           <input
                             type="checkbox"
@@ -698,6 +700,7 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
                       </AnimatePresence>
                     </div>
                   )}
+                  </>
                   
                   <div className="mb-4">
                     <div className="flex items-center mb-2">
