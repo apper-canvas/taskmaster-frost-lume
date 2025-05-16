@@ -69,98 +69,98 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     
     try {
       setIsSubmitting(true);
-      return;
-    }
-    
-    if (editingTaskId) {
-      // Update existing task
-      const updatedTasks = tasks.map(task => 
-        task.id === editingTaskId
-          ? { 
-              ...task, 
-              title, 
-              description, 
-              priority, 
-              dueDate: dueDate || null,
-              updatedAt: new Date().toISOString(),
-              isRepeating, repeatType, customInterval, customUnit,
-              reminder: reminderEnabled && dueDate ? { enabled: true, minutesBefore: reminderMinutesBefore } : null,
-              category: category || null, categoryColor: categoryColor || null
-            } 
-          : task);
-
-      // Update reminder if enabled
-      if (reminderEnabled && dueDate) {
-        const taskToUpdate = updatedTasks.find(t => t.id === editingTaskId);
+      
+      if (editingTaskId) {
+        // Update existing task
+        const updatedTasks = tasks.map(task => 
+          task.id === editingTaskId
+            ? { 
+                ...task, 
+                title, 
+                description, 
+                priority, 
+                dueDate: dueDate || null,
+                updatedAt: new Date().toISOString(),
+                isRepeating, repeatType, customInterval, customUnit,
+                reminder: reminderEnabled && dueDate ? { enabled: true, minutesBefore: reminderMinutesBefore } : null,
+                category: category || null, categoryColor: categoryColor || null
+              } 
+            : task);
+  
+        // Update reminder if enabled
+        if (reminderEnabled && dueDate) {
+          const taskToUpdate = updatedTasks.find(t => t.id === editingTaskId);
+          
+          try {
+            await taskService.updateTask(taskToUpdate);
+          } catch (error) {
+            toast.error('Failed to update task in database');
+          }
+          taskToUpdate.reminder = {
+            enabled: true,
+            minutesBefore: reminderMinutesBefore
+          };
+          reminderService.setReminder(taskToUpdate);
+          toast.info(`Reminder set for ${reminderMinutesBefore} minutes before due date`);
+        }
+        
+        // Reset editing state
+        setEditingTaskId(null);
+      } else {
+        // Create new task
+        const newTask = {
+          id: Date.now().toString(), // This will be replaced by the database ID after creation
+          title,
+          description,
+          priority,
+          dueDate: dueDate || null,
+          completed: false,
+          createdAt: new Date().toISOString(),
+          // Add recurrence data if the task is repeating
+          isRepeating,
+          repeatType,
+          customInterval,
+          customUnit,
+          // Track original due date for recurring calculations
+          originalDueDate: dueDate || null,
+          // Category data
+          category: category || null,
+          categoryColor: categoryColor || null,
+          order: tasks.length, // For drag and drop ordering
+          // Add reminder data if enabled
+          reminder: reminderEnabled && dueDate ? {
+            enabled: true,
+            minutesBefore: reminderMinutesBefore
+          } : null
+        };
+        
+        // Set reminder if enabled
+        if (reminderEnabled && dueDate) reminderService.setReminder(newTask);
         
         try {
-          await taskService.updateTask(taskToUpdate);
+          // The addTask function should now handle the database creation
+          await addTask(newTask);
+          toast.success('Task created successfully!');
         } catch (error) {
-          toast.error('Failed to update task in database');
+          console.error('Error creating task:', error);
+          toast.error('Failed to create task');
         }
-        taskToUpdate.reminder = {
-          enabled: true,
-          minutesBefore: reminderMinutesBefore
-        };
-        reminderService.setReminder(taskToUpdate);
-        toast.info(`Reminder set for ${reminderMinutesBefore} minutes before due date`);
       }
       
-      // Reset editing state
-      setEditingTaskId(null);
-    } else {
-      // Create new task
-      const newTask = {
-        id: Date.now().toString(), // This will be replaced by the database ID after creation
-        title,
-        description,
-        priority,
-        dueDate: dueDate || null,
-        completed: false,
-        createdAt: new Date().toISOString(),
-        // Add recurrence data if the task is repeating
-        isRepeating,
-        repeatType,
-        customInterval,
-        customUnit,
-        // Track original due date for recurring calculations
-        originalDueDate: dueDate || null,
-        // Category data
-        category: category || null,
-        categoryColor: categoryColor || null,
-        order: tasks.length, // For drag and drop ordering
-        // Add reminder data if enabled
-        reminder: reminderEnabled && dueDate ? {
-          enabled: true,
-          minutesBefore: reminderMinutesBefore
-        } : null
-      };
-      
-      // Set reminder if enabled
-      if (reminderEnabled && dueDate) reminderService.setReminder(newTask);
-      
-      try {
-        // The addTask function should now handle the database creation
-        await addTask(newTask);
-        toast.success('Task created successfully!');
-      } catch (error) {
-        console.error('Error creating task:', error);
-        toast.error('Failed to create task');
-      }
-    }
     } catch (error) {
       console.error('Error submitting task:', error);
       toast.error('Failed to save task');
     } finally {
       setIsSubmitting(false);
       
-      // Only reset the form if we succeeded or if we're not editing
-      // This way, the user can retry submitting the edit if it fails
-      if (!editingTaskId || !isSubmitting) {
+      // Reset the form after submission
+      if (!isSubmitting) {
         resetForm();
+      }
     }
-    
-    // Reset form
+  };
+  
+  const resetForm = () => {
     setTitle('');
     setDescription('');
     setPriority('medium');
@@ -177,10 +177,6 @@ const MainFeature = ({ tasks, addTask, toggleComplete, deleteTask }) => {
     setCustomCategory('');
     setCategoryColor('blue');
     setExpanded(false);
-    }
-  };
-  
-  const resetForm = () => {
   };
   
   // Start editing a task
