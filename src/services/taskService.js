@@ -24,7 +24,7 @@ const mapTaskToDbRecord = (task) => {
 // Map from database record to our task object model
 const mapDbRecordToTask = (record) => {
   return {
-    id: record.Id.toString(),
+    id: record.id.toString(),
     title: record.title,
     description: record.description,
     priority: record.priority,
@@ -36,7 +36,7 @@ const mapDbRecordToTask = (record) => {
     customUnit: record.customUnit,
     category: record.category,
     categoryColor: record.categoryColor,
-    createdAt: record.CreatedOn,
+    createdAt: record.createdOn,
     reminder: record.reminder ? {
       enabled: record.reminder,
       minutesBefore: record.reminderMinutesBefore
@@ -53,17 +53,17 @@ export const fetchTasks = async () => {
     });
 
     const params = {
-      Fields: [
-        'Id', 'title', 'description', 'priority', 'dueDate', 'completed',
+      fields: [
+        'id', 'title', 'description', 'priority', 'dueDate', 'completed',
         'isRepeating', 'repeatType', 'customInterval', 'customUnit',
         'reminder', 'reminderMinutesBefore', 'category', 'categoryColor',
-        'CreatedOn', 'ModifiedOn'
+        'createdOn', 'modifiedOn'
       ],
       where: [
       ],
       orderBy: [
         {
-          field: 'CreatedOn',
+          field: 'createdOn',
           direction: 'desc'
         }
       ]
@@ -119,7 +119,7 @@ export const updateTask = async (task) => {
 
     const dbRecord = {
       ...mapTaskToDbRecord(task),
-      Id: parseInt(task.id) // Need to include the ID for updates
+      id: parseInt(task.id) // Need to include the ID for updates
     };
     
     const params = {
@@ -148,7 +148,7 @@ export const deleteTask = async (taskId) => {
     });
 
     const params = {
-      RecordIds: [parseInt(taskId)]
+      recordIds: [parseInt(taskId)]
     };
 
     const response = await client.deleteRecord('task28', params);
