@@ -206,22 +206,15 @@ const Home = () => {
     const tomorrowDate = getTomorrowsDate();
     const dueTomorrow = tasks.filter(task => task.dueDate === tomorrowDate && !task.completed);
     
-    if (dueTomorrow.length === 0) {
-      toast.info('No tasks due tomorrow');
-      return;
-    }
-    
     // Request notification permission if needed
     if (Notification.permission !== 'granted') {
       await reminderService.requestPermission();
     }
+    
+    // Show a toast and notification for each task
+    if (dueTomorrow.length === 0) {
       toast.info('Reminder: No tasks due tomorrow');
       return false;
-    }
-    
-    // Request notification permission if needed
-    if (Notification.permission !== 'granted') {
-      await reminderService.requestPermission();
     }
     
     // Show a toast and notification for each task
@@ -265,13 +258,8 @@ const Home = () => {
     if (categories.length === 0) {
       toast.info('Reminder: No categories found');
       return false;
-    dueTomorrow.forEach((task, index) => {
-      // Add a small delay between notifications to avoid overwhelming the user
-      setTimeout(() => {
-        toast.info(`Due tomorrow: "${task.title}" (${task.priority} priority)`);
-        if (Notification.permission === 'granted') {
-          new Notification('Task Due Tomorrow', { body: task.title, icon: '/favicon.ico' });
-        }
+    }
+    
     // Show a toast and notification for each category
     categories.forEach((category, index) => {
       const categoryTasks = tasks.filter(task => 
@@ -281,11 +269,20 @@ const Home = () => {
       );
       
       if (categoryTasks.length === 0) return;
-      
-  };
-  
+      // Show a notification for this category
+      setTimeout(() => {
         toast.info(`Reminder: ${category} category has ${categoryTasks.length} active tasks`);
       }, index * 200);
+    });
+    
+    return true;
+  };
+  
+  return (
+    <div className="container mx-auto px-4 pb-16">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
